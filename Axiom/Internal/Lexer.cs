@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -17,14 +18,14 @@ namespace Axiom.Internal
         public Symbol Next()
         {
             while (_reader.Peek() != -1) {
-                char ch = (char)_reader.Read();
+                int ch = _reader.Read();
                 _columnNumber++;
 
                 if (IsNewLine(ch)) {
                     _lineNumber++;
                     _columnNumber = 0;
 
-                    if (IsNewLine((char)_reader.Peek())) {
+                    if (IsNewLine(_reader.Peek())) {
                         _reader.Read();
                     }
 
@@ -36,7 +37,7 @@ namespace Axiom.Internal
                     switch (_reader.Peek()) {
                     case '/':
                         do {
-                            ch = (char)_reader.Read();
+                            ch = _reader.Read();
                         } while (!IsNewLine(ch));
 
                         _lineNumber++;
@@ -44,17 +45,16 @@ namespace Axiom.Internal
 
                         continue;
                     case '*':
-                        char p;
+                        int p;
 
                         do {
                             p = ch;
-                            int c = _reader.Read();
+                            ch = _reader.Read();
 
-                            if (c == -1) {
+                            if (ch == -1) {
                                 Error.Report("unclosed multi-line comment", new Position(_lineNumber, _columnNumber));
                             }
 
-                            ch = (char)c;
                             _columnNumber++;
 
                             if (IsNewLine(ch)) {
@@ -73,11 +73,11 @@ namespace Axiom.Internal
                     var sb = new StringBuilder();
                     var pos = new Position(_lineNumber, _columnNumber);
 
-                    sb.Append(ch);
+                    sb.Append((char)ch);
 
-                    while (IsDigit((char)_reader.Peek())) {
-                        ch = (char)_reader.Read();
-                        sb.Append(ch);
+                    while (IsDigit(_reader.Peek())) {
+                        ch = _reader.Read();
+                        sb.Append((char)ch);
                         pos.ColumnEnd++;
                     }
 
@@ -92,11 +92,11 @@ namespace Axiom.Internal
                     var sb = new StringBuilder();
                     var pos = new Position(_lineNumber, _columnNumber);
 
-                    sb.Append(ch);
+                    sb.Append((char)ch);
 
-                    while (IsIdentifier((char)_reader.Peek())) {
-                        ch = (char)_reader.Read();
-                        sb.Append(ch);
+                    while (IsIdentifier(_reader.Peek())) {
+                        ch = _reader.Read();
+                        sb.Append((char)ch);
                         pos.ColumnEnd++;
                     }
 
@@ -128,6 +128,9 @@ namespace Axiom.Internal
                     case "while":
                         symbol.Token = Token.KeywordWhile;
                         break;
+                    case "do":
+                        symbol.Token = Token.KeywordDo;
+                        break;
                     case "class":
                         symbol.Token = Token.KeywordClass;
                         break;
@@ -151,34 +154,150 @@ namespace Axiom.Internal
                     return symbol;
                 }
                 #endregion
+
+                #region Strings
+
+                if (IsStringDelimiter(ch)) {
+                    var sb = new StringBuilder();
+                    var pos = new Position(_lineNumber, _columnNumber);
+
+                    sb.Append((char)ch);
+
+                    do {
+                        ch = _reader.Read();
+                        pos.ColumnEnd++;
+
+                        sb.Append((char)ch);
+
+                        if (IsStringDelimiter(ch)) {
+                            break;
+                        } else if (IsNewLine(ch) || ch == -1) {
+                            Error.Report("unclosed string literal", new Position(_lineNumber, pos.ColumnEnd));
+                        }
+                    } while (true);
+
+                    _columnNumber = pos.ColumnEnd;
+
+                    return new Symbol(Token.StringLiteral, pos, sb.ToString());
+                }
+
+                #endregion
+
+                #region Symbols
+
+                if (!IsWhiteSpace(ch)) {
+                    var sb = new StringBuilder();
+                    var pos = new Position(_lineNumber, _columnNumber);
+
+                    sb.Append((char)ch);
+
+                    int p = _reader.Peek();
+
+                    if (ch == '=' || ch == '!' || ch == '<' || ch == '>') {
+                        if (p == '=') {
+                            sb.Append((char)_reader.Read());
+                            pos.ColumnEnd++;
+                        }
+                    } else if (ch == '&') {
+                        if (p == '&') {
+                            sb.Append((char)_reader.Peek());
+                            pos.ColumnEnd++;
+                        }
+                    } else if (ch == '|') {
+                        if (p == '|') {
+                            sb.Append((char)_reader.Peek());
+                            pos.ColumnEnd++;
+                        }
+                    }
+
+                    if (ch == '<' && p == '<' || ch == '>' && p == '>') {
+                        sb.Append((char)_reader.Peek());
+                        pos.ColumnEnd++;
+                    }
+
+                    var lexeme = sb.ToString();
+
+                    if (Symbols.ContainsKey(lexeme)) {
+                        return new Symbol(Symbols[lexeme], pos, lexeme);
+                    } else {
+                        Error.Report("Illegal character", pos);
+                    }
+                }
+
+                #endregion
             }
 
             return new Symbol(Token.Eof, new Position(_lineNumber, _columnNumber), null);
-        }
-
-        private static bool IsNewLine(char ch)
-        {
-            return ch == '\n' || ch == '\r';
-        }
-
-        private static bool IsDigit(char ch)
-        {
-            return char.IsDigit(ch);
-        }
-
-        private static bool IsIdentifierStart(char ch)
-        {
-            return ch == '_' || char.IsLetter(ch);
-        }
-
-        private static bool IsIdentifier(char ch)
-        {
-            return ch == '_' || char.IsLetterOrDigit(ch);
         }
 
         public void Dispose()
         {
             _reader.Dispose();
         }
+
+        private static bool IsWhiteSpace(int ch)
+        {
+            return char.IsWhiteSpace((char)ch);
+        }
+
+        private static bool IsStringDelimiter(int ch)
+        {
+            return ch == '"';
+        }
+
+        private static bool IsNewLine(int ch)
+        {
+            return ch == '\n' || ch == '\r';
+        }
+
+        private static bool IsDigit(int ch)
+        {
+            return char.IsDigit((char)ch);
+        }
+
+        private static bool IsIdentifierStart(int ch)
+        {
+            return ch == '_' || char.IsLetter((char)ch);
+        }
+
+        private static bool IsIdentifier(int ch)
+        {
+            return ch == '_' || char.IsLetterOrDigit((char)ch);
+        }
+
+        private static IDictionary<string, Token> Symbols = new SortedDictionary<string, Token> {
+            { "+", Token.Plus },
+            { "-", Token.Minus },
+            { "*", Token.Multiply },
+            { "/", Token.Divide },
+            { "%", Token.Mod },
+            { "&&", Token.LogicalAnd },
+            { "||", Token.LogicalOr },
+            { "!", Token.LogicalNot },
+            { "==", Token.LogicalEqual },
+            { "!=", Token.LogicalNotEqual },
+            { "<", Token.LogicalLess },
+            { ">", Token.LogicalGreater },
+            { "<=", Token.LogicalLessOrEqual },
+            { ">=", Token.LogicalGreaterOrEqual },
+            { "&", Token.BitwiseAnd },
+            { "|", Token.BitwiseOr },
+            { "^", Token.BitwiseXor },
+            { "~", Token.BitwiseNot },
+            { "<<", Token.BitwiseLeftShift },
+            { ">>", Token.BitwiseRightShift },
+            { "=", Token.Assign },
+            { ":", Token.Colon },
+            { ";", Token.SemiColon },
+            { ",", Token.Comma },
+            { ".", Token.Dot },
+            { "?", Token.QuestionMark },
+            { "(", Token.OpenParenthesis },
+            { ")", Token.CloseParenthesis },
+            { "[", Token.OpenBracket },
+            { "]", Token.CloseBracket },
+            { "{", Token.OpenBrace },
+            { "}", Token.CloseBrace },
+        };
     }
 }
