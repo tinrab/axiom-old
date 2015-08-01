@@ -1,6 +1,6 @@
-﻿namespace Axiom.Internal
+﻿namespace Axiom
 {
-    internal class Position
+    public class Position
     {
         public Position()
         {
