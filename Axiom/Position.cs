@@ -15,6 +15,12 @@
             ColumnEnd = columnEnd;
         }
 
+        public Position(int lineNumber, int columnNumber)
+        {
+            LineBegin = LineEnd = lineNumber;
+            ColumnBegin = ColumnEnd = columnNumber;
+        }
+
         public int LineBegin { get; set; }
         public int ColumnBegin { get; set; }
         public int LineEnd { get; set; }
