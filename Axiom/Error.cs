@@ -15,6 +15,7 @@ namespace Axiom
         protected Error(SerializationInfo info, StreamingContext context)
             : base(info, context) { }
 
+// TODO make this internal
         public static void Report(string message, Position position = null)
         {
             if (position == null) {
