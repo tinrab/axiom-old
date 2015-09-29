@@ -52,7 +52,7 @@ namespace Axiom.Internal
                             ch = _reader.Read();
 
                             if (ch == -1) {
-                                Error.Report("unclosed multi-line comment", new Position(_lineNumber, _columnNumber));
+                                Error.Report(new Position(_lineNumber, _columnNumber), "Unclosed multi-line comment");
                             }
 
                             _columnNumber++;
@@ -68,14 +68,23 @@ namespace Axiom.Internal
                 }
                 #endregion
 
-                #region Integers
+                #region Numbers
                 if (IsDigit(ch)) {
                     var sb = new StringBuilder();
                     var pos = new Position(_lineNumber, _columnNumber);
+                    var token = Token.IntegerLiteral;
 
                     sb.Append((char)ch);
 
-                    while (IsDigit(_reader.Peek())) {
+                    while (true) {
+                        if (!IsDigit(_reader.Peek())) {
+                            if (_reader.Peek() == '.') {
+                                token = Token.DecimalLiteral;
+                            } else {
+                                break;
+                            }
+                        }
+
                         ch = _reader.Read();
                         sb.Append((char)ch);
                         pos.ColumnEnd++;
@@ -83,7 +92,7 @@ namespace Axiom.Internal
 
                     _columnNumber = pos.ColumnEnd;
 
-                    return new Symbol(Token.IntegerLiteral, pos, sb.ToString());
+                    return new Symbol(token, pos, sb.ToString());
                 }
                 #endregion
 
@@ -128,12 +137,6 @@ namespace Axiom.Internal
                     case "while":
                         symbol.Token = Token.KeywordWhile;
                         break;
-                    case "do":
-                        symbol.Token = Token.KeywordDo;
-                        break;
-                    case "class":
-                        symbol.Token = Token.KeywordClass;
-                        break;
                     case "this":
                         symbol.Token = Token.KeywordThis;
                         break;
@@ -156,7 +159,6 @@ namespace Axiom.Internal
                 #endregion
 
                 #region Strings
-
                 if (IsStringDelimiter(ch)) {
                     var sb = new StringBuilder();
                     var pos = new Position(_lineNumber, _columnNumber);
@@ -172,7 +174,7 @@ namespace Axiom.Internal
                         if (IsStringDelimiter(ch)) {
                             break;
                         } else if (IsNewLine(ch) || ch == -1) {
-                            Error.Report("unclosed string literal", new Position(_lineNumber, pos.ColumnEnd));
+                            Error.Report(new Position(_lineNumber, pos.ColumnEnd), "Unclosed string literal");
                         }
                     } while (true);
 
@@ -180,11 +182,9 @@ namespace Axiom.Internal
 
                     return new Symbol(Token.StringLiteral, pos, sb.ToString());
                 }
-
                 #endregion
 
                 #region Symbols
-
                 if (!IsWhiteSpace(ch)) {
                     var sb = new StringBuilder();
                     var pos = new Position(_lineNumber, _columnNumber);
@@ -200,18 +200,18 @@ namespace Axiom.Internal
                         }
                     } else if (ch == '&') {
                         if (p == '&') {
-                            sb.Append((char)_reader.Peek());
+                            sb.Append((char)_reader.Read());
                             pos.ColumnEnd++;
                         }
                     } else if (ch == '|') {
                         if (p == '|') {
-                            sb.Append((char)_reader.Peek());
+                            sb.Append((char)_reader.Read());
                             pos.ColumnEnd++;
                         }
                     }
 
                     if (ch == '<' && p == '<' || ch == '>' && p == '>') {
-                        sb.Append((char)_reader.Peek());
+                        sb.Append((char)_reader.Read());
                         pos.ColumnEnd++;
                     }
 
@@ -220,10 +220,9 @@ namespace Axiom.Internal
                     if (Symbols.ContainsKey(lexeme)) {
                         return new Symbol(Symbols[lexeme], pos, lexeme);
                     } else {
-                        Error.Report("Illegal character", pos);
+                        Error.Report(pos, "Illegal character");
                     }
                 }
-
                 #endregion
             }
 

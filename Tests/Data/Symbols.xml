@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Data>
+  <Row>
+    <Source>
+      ident
+      42
+      3.14
+      "hello world"
+      true
+      // bin
+      + - * / %
+      //logical
+      &amp;&amp; || ! == != &lt; > &lt;= >=
+      // bitwise
+      &amp; | ^ ~ &lt;&lt; &gt;&gt;
+      /* others, also this comment */
+      = : ; , . ? () [] {}
+      // keywords
+      nil if else elif for while this base try catch
+    </Source>
+  </Row>
+</Data>

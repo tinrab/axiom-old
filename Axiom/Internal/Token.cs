@@ -46,8 +46,6 @@
         KeywordElif,
         KeywordFor,
         KeywordWhile,
-        KeywordDo,
-        KeywordClass,
         KeywordThis,
         KeywordBase,
         KeywordTry,

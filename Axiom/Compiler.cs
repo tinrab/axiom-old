@@ -3,7 +3,7 @@ using Axiom.Internal;
 
 namespace Axiom
 {
-    public class Engine
+    public class Compiler
     {
         public Program Compile(string source)
         {
@@ -12,10 +12,15 @@ namespace Axiom
 
         public Program Compile(TextReader textReader)
         {
-            using (var lexer = new Lexer(textReader)) {
-                var parser = new Parser(lexer);
+            var lexer = new Lexer(textReader);
+            var parser = new Parser(lexer);
 
+            try {
                 parser.Parse();
+            } catch (Error e) {
+                parser.Dispose();
+
+                throw e;
             }
 
             return new Program();

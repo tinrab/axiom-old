@@ -6,17 +6,22 @@ namespace Axiom
     [Serializable]
     public class Error : Exception
     {
-        public Error() { }
+        internal Error() { }
 
-        public Error(string message) : base(message) { }
+        internal Error(string message) : base(message) { }
 
-        public Error(string message, Exception inner) : base(message, inner) { }
+        internal Error(string message, Exception inner) : base(message, inner) { }
 
         protected Error(SerializationInfo info, StreamingContext context)
-            : base(info, context) { }
+            : base(info, context)
+        { }
 
-// TODO make this internal
-        public static void Report(string message, Position position = null)
+        internal static void Report(Position position, string message, params object[] args)
+        {
+            Report(position, string.Format(message, args));
+        }
+
+        internal static void Report(Position position, string message)
         {
             if (position == null) {
                 throw new Error(message);
