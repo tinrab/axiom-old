@@ -2,7 +2,8 @@
 <Data>
   <Row>
     <Source>
-      1 + 1
+      x = 42;
+      x+1;
     </Source>
   </Row>
 </Data>

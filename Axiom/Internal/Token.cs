@@ -3,7 +3,6 @@
     internal enum Token
     {
         Eof,
-        NewLine,
         Identifier,
         IntegerLiteral,
         DecimalLiteral,

@@ -11,7 +11,10 @@ namespace Axiom.Internal
         void Visit(CompoundStatement acceptor);
         void Visit(ConditionalExpression acceptor);
         void Visit(Literal acceptor);
+        void Visit(WhileStatement acceptor);
         void Visit(ReferenceExpression acceptor);
+        void Visit(IfStatement acceptor);
+        void Visit(ForStatement acceptor);
         void Visit(Identifier acceptor);
         void Visit(MemberExpression acceptor);
         void Visit(AssignmentExpression acceptor);

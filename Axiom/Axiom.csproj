@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="Compiler.cs" />
     <Compile Include="Error.cs" />
+    <Compile Include="Internal\AstDebug.cs" />
     <Compile Include="Internal\Ast\AssignmentExpression.cs" />
     <Compile Include="Internal\Ast\AstNode.cs" />
     <Compile Include="Internal\Ast\BinaryExpression.cs" />
@@ -45,7 +46,9 @@
     <Compile Include="Internal\Ast\ConditionalExpression.cs" />
     <Compile Include="Internal\Ast\Expression.cs" />
     <Compile Include="Internal\Ast\ExpressionStatement.cs" />
+    <Compile Include="Internal\Ast\ForStatement.cs" />
     <Compile Include="Internal\Ast\Identifier.cs" />
+    <Compile Include="Internal\Ast\IfStatement.cs" />
     <Compile Include="Internal\Ast\Literal.cs" />
     <Compile Include="Internal\Ast\MemberExpression.cs" />
     <Compile Include="Internal\Ast\Program.cs" />
@@ -53,19 +56,23 @@
     <Compile Include="Internal\Ast\SequenceExpression.cs" />
     <Compile Include="Internal\Ast\Statement.cs" />
     <Compile Include="Internal\Ast\UnaryExpression.cs" />
+    <Compile Include="Internal\Ast\WhileStatement.cs" />
     <Compile Include="Internal\ILexer.cs" />
     <Compile Include="Internal\IParser.cs" />
     <Compile Include="Internal\IVisitor.cs" />
     <Compile Include="Internal\Lexer.cs" />
+    <Compile Include="Internal\Semantics\IllegalDeleteException.cs" />
+    <Compile Include="Internal\Semantics\IllegalInsertException.cs" />
+    <Compile Include="Internal\Semantics\NameChecker.cs" />
     <Compile Include="Internal\Parser.cs" />
+    <Compile Include="Internal\Semantics\SymbolDescription.cs" />
+    <Compile Include="Internal\Semantics\SymbolTable.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="Internal\Symbol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Internal\Token.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Internal\Intermediate\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

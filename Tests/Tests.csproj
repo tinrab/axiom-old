@@ -56,8 +56,12 @@
     <Compile Include="LexerTests.cs" />
     <Compile Include="ParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SemanticsTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Data\Initialization.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Data\SimpleExpressions.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>

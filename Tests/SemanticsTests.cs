@@ -1,13 +1,13 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Axiom.Internal;
+using Axiom.Internal.Semantics;
 using System.IO;
-using Axiom.Internal.Ast;
 
 namespace Tests
 {
     [TestClass]
-    public class ParserTests
+    public class SemanticsTests
     {
         private TestContext testContextInstance;
         public TestContext TestContext
@@ -16,16 +16,18 @@ namespace Tests
             set { testContextInstance = value; }
         }
 
-        [TestMethod, TestCategory("Parser")]
-        [DeploymentItem("Data/SimpleExpressions.xml")]
-        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML", "|DataDirectory|\\SimpleExpressions.xml", "Row", DataAccessMethod.Sequential)]
+        [TestMethod, TestCategory("Semantics")]
+        [DeploymentItem("Data/Initialization.xml")]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML", "|DataDirectory|\\Initialization.xml", "Row", DataAccessMethod.Sequential)]
         //[Timeout(100)]
-        public void ParseSimpleExpressions()
+        public void TestMethod1()
         {
             var source = TestContext.DataRow["Source"].ToString();
             var parser = new Parser(new Lexer(new StringReader(source)));
 
             var ast = parser.Parse();
+            ast.Accept(new NameChecker());
+
             AstDebug.Debug(ast);
 
             parser.Dispose();

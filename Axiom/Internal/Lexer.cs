@@ -9,7 +9,6 @@ namespace Axiom.Internal
     {
         private TextReader _reader;
         private int _lineNumber, _columnNumber;
-        private bool _wasNewLine;
 
         public Lexer(TextReader textReader)
         {
@@ -28,14 +27,6 @@ namespace Axiom.Internal
 
                     if (IsNewLine(_reader.Peek())) {
                         _reader.Read();
-                    }
-
-                    if (!_wasNewLine) {
-                        _wasNewLine = true;
-
-                        return new Symbol(Token.NewLine, new Position(_lineNumber, _columnNumber), null);
-                    } else {
-                        _wasNewLine = false;
                     }
 
                     continue;
@@ -279,8 +270,6 @@ namespace Axiom.Internal
                     var lexeme = sb.ToString();
 
                     if (Punctuators.ContainsKey(lexeme)) {
-                        _wasNewLine = Punctuators[lexeme] == Token.SemiColon;
-
                         return new Symbol(Punctuators[lexeme], pos, lexeme);
                     } else {
                         Error.Report(pos, "Illegal character");

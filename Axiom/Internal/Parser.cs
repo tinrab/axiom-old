@@ -73,10 +73,12 @@ namespace Axiom.Internal
                 return ParseExpressionStatement();
             case Token.KeywordIf:
                 return ParseIfStatement();
-            case Token.NewLine:
+            case Token.KeywordWhile:
+                return ParseWhileStatement();
+            case Token.KeywordFor:
+                return ParseForStatement();
             case Token.SemiColon:
-            case Token.Eof:
-                Accept(Token.NewLine, Token.SemiColon, Token.Eof);
+                Accept(Token.SemiColon);
 
                 return null;
             }
@@ -84,7 +86,41 @@ namespace Axiom.Internal
             return ParseExpressionStatement();
         }
 
-        private Statement ParseIfStatement() { return null; }
+        private Statement ParseIfStatement()
+        {
+            Check(Token.KeywordIf);
+
+            Check(Token.OpenParenthesis);
+            var condition = ParseExpression();
+            Check(Token.CloseParenthesis);
+            var body = ParseStatement();
+
+            if (Accept(Token.KeywordElse)) {
+                var elseBody = ParseStatement();
+
+                return new IfStatement(condition, body, elseBody);
+            }
+
+            return new IfStatement(condition, body);
+        }
+
+        private Statement ParseWhileStatement()
+        {
+            Check(Token.KeywordWhile);
+
+            Check(Token.OpenParenthesis);
+            var condition = ParseExpression();
+            Check(Token.CloseParenthesis);
+
+            var body = ParseStatement();
+
+            return new WhileStatement(condition, body);
+        }
+
+        private Statement ParseForStatement()
+        {
+            return new ForStatement(null, null, null, null);
+        }
 
         private Statement ParseCompoundStatement()
         {
