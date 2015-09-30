@@ -58,7 +58,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\SimpleExpressions.xml" />
+    <Content Include="Data\SimpleExpressions.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Data\Symbols.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

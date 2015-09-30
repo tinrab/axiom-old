@@ -2,7 +2,27 @@
 <Data>
   <Row>
     <Source>
-      x * 42 + y / 2
+      1 + 1
+    </Source>
+  </Row>
+  <Row>
+    <Source>
+      object.print("hey", other.value, 42, 1337);
+    </Source>
+  </Row>
+  <Row>
+    <Source>
+      ++x;
+      --y;
+      delete this;
+      this++;
+      base.f();
+      !true == false;
+    </Source>
+  </Row>
+  <Row>
+    <Source>
+      x = f() ? 42 : -1
     </Source>
   </Row>
 </Data>

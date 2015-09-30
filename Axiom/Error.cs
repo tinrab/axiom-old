@@ -16,6 +16,13 @@ namespace Axiom
             : base(info, context)
         { }
 
+        internal static void Report()
+        {
+            var error = new Error("Internal error");
+
+            throw error;
+        }
+
         internal static void Report(Position position, string message, params object[] args)
         {
             Report(position, string.Format(message, args));

@@ -5,10 +5,11 @@ using System.Text;
 
 namespace Axiom.Internal
 {
-    internal class Lexer : IDisposable
+    internal class Lexer : ILexer
     {
         private TextReader _reader;
         private int _lineNumber, _columnNumber;
+        private bool _wasNewLine;
 
         public Lexer(TextReader textReader)
         {
@@ -27,6 +28,14 @@ namespace Axiom.Internal
 
                     if (IsNewLine(_reader.Peek())) {
                         _reader.Read();
+                    }
+
+                    if (!_wasNewLine) {
+                        _wasNewLine = true;
+
+                        return new Symbol(Token.NewLine, new Position(_lineNumber, _columnNumber), null);
+                    } else {
+                        _wasNewLine = false;
                     }
 
                     continue;
@@ -149,6 +158,15 @@ namespace Axiom.Internal
                     case "catch":
                         symbol.Token = Token.KeywordCatch;
                         break;
+                    case "delete":
+                        symbol.Token = Token.KeywordDelete;
+                        break;
+                    case "is":
+                        symbol.Token = Token.KeywordIs;
+                        break;
+                    case "in":
+                        symbol.Token = Token.KeywordIn;
+                        break;
                     default:
                         symbol.Token = Token.Identifier;
                         break;
@@ -184,7 +202,7 @@ namespace Axiom.Internal
                 }
                 #endregion
 
-                #region Symbols
+                #region Punctuators
                 if (!IsWhiteSpace(ch)) {
                     var sb = new StringBuilder();
                     var pos = new Position(_lineNumber, _columnNumber);
@@ -199,26 +217,71 @@ namespace Axiom.Internal
                             pos.ColumnEnd++;
                         }
                     } else if (ch == '&') {
-                        if (p == '&') {
+                        if (p == '&' || p == '=') {
                             sb.Append((char)_reader.Read());
                             pos.ColumnEnd++;
                         }
                     } else if (ch == '|') {
-                        if (p == '|') {
+                        if (p == '|' || p == '=') {
+                            sb.Append((char)_reader.Read());
+                            pos.ColumnEnd++;
+                        }
+                    } else if (ch == '^' && p == '=') {
+                        sb.Append((char)_reader.Read());
+                        pos.ColumnEnd++;
+                    }
+
+                    if (ch == '<' && p == '<') {
+                        sb.Append((char)_reader.Read());
+                        pos.ColumnEnd++;
+
+                        if (_reader.Peek() == '=') {
                             sb.Append((char)_reader.Read());
                             pos.ColumnEnd++;
                         }
                     }
 
-                    if (ch == '<' && p == '<' || ch == '>' && p == '>') {
+                    if (ch == '>' && p == '>') {
+                        sb.Append((char)_reader.Read());
+                        pos.ColumnEnd++;
+
+                        if (_reader.Peek() == '=') {
+                            sb.Append((char)_reader.Read());
+                            pos.ColumnEnd++;
+                        } else if (_reader.Peek() == '>') {
+                            sb.Append((char)_reader.Read());
+                            pos.ColumnEnd++;
+
+                            if (_reader.Peek() == '=') {
+                                sb.Append((char)_reader.Read());
+                                pos.ColumnEnd++;
+                            }
+                        }
+                    }
+
+                    if (ch == '+' && (p == '+' || p == '=')) {
+                        sb.Append((char)_reader.Read());
+                        pos.ColumnEnd++;
+                    } else if (ch == '-' && (p == '-' || p == '=')) {
+                        sb.Append((char)_reader.Read());
+                        pos.ColumnEnd++;
+                    } else if (ch == '*' && (p == '*' || p == '=')) {
+                        sb.Append((char)_reader.Read());
+                        pos.ColumnEnd++;
+                    } else if (ch == '/' && (p == '/' || p == '=')) {
+                        sb.Append((char)_reader.Read());
+                        pos.ColumnEnd++;
+                    } else if (ch == '%' && (p == '%' || p == '=')) {
                         sb.Append((char)_reader.Read());
                         pos.ColumnEnd++;
                     }
 
                     var lexeme = sb.ToString();
 
-                    if (Symbols.ContainsKey(lexeme)) {
-                        return new Symbol(Symbols[lexeme], pos, lexeme);
+                    if (Punctuators.ContainsKey(lexeme)) {
+                        _wasNewLine = Punctuators[lexeme] == Token.SemiColon;
+
+                        return new Symbol(Punctuators[lexeme], pos, lexeme);
                     } else {
                         Error.Report(pos, "Illegal character");
                     }
@@ -264,12 +327,14 @@ namespace Axiom.Internal
             return ch == '_' || char.IsLetterOrDigit((char)ch);
         }
 
-        private static IDictionary<string, Token> Symbols = new SortedDictionary<string, Token> {
-            { "+", Token.Plus },
-            { "-", Token.Minus },
+        private static readonly IDictionary<string, Token> Punctuators = new SortedDictionary<string, Token> {
+            { "+", Token.Add },
+            { "-", Token.Subtract },
             { "*", Token.Multiply },
             { "/", Token.Divide },
-            { "%", Token.Mod },
+            { "%", Token.Modulo },
+            { "++", Token.Increment },
+            { "--", Token.Decrement },
             { "&&", Token.LogicalAnd },
             { "||", Token.LogicalOr },
             { "!", Token.LogicalNot },
@@ -285,7 +350,19 @@ namespace Axiom.Internal
             { "~", Token.BitwiseNot },
             { "<<", Token.BitwiseLeftShift },
             { ">>", Token.BitwiseRightShift },
+            { ">>>", Token.BitwiseUnsignedRightShift },
             { "=", Token.Assign },
+            { "+=", Token.AddAssign },
+            { "-=", Token.SubtractAssign },
+            { "*=", Token.MultiplyAssign },
+            { "/=", Token.DivideAssign },
+            { "%=", Token.ModuloAssign },
+            { "&=", Token.BitwiseAndAssign },
+            { "|=", Token.BitwiseOrAssign },
+            { "^=", Token.BitwiseXorAssign },
+            { "<<=", Token.LeftShiftAssign },
+            { ">>=", Token.RightShiftAssign },
+            { ">>>=", Token.BitwiseUnsignedRightShiftAssign },
             { ":", Token.Colon },
             { ";", Token.SemiColon },
             { ",", Token.Comma },

@@ -5,12 +5,12 @@ namespace Axiom
 {
     public class Compiler
     {
-        public Program Compile(string source)
+        public void Compile(string source)
         {
-            return Compile(new StringReader(source));
+            Compile(new StringReader(source));
         }
 
-        public Program Compile(TextReader textReader)
+        public void Compile(TextReader textReader)
         {
             var lexer = new Lexer(textReader);
             var parser = new Parser(lexer);
@@ -22,8 +22,6 @@ namespace Axiom
 
                 throw e;
             }
-
-            return new Program();
         }
     }
 }
