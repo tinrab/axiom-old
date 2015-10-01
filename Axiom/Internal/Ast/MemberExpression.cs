@@ -4,7 +4,7 @@
     {
         internal enum AccessType
         {
-            ListAccess, Property, Call
+            ListAccess, Property
         }
 
         public MemberExpression(AccessType type, Expression obj, Expression member)

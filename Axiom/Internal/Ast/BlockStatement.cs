@@ -2,9 +2,9 @@
 
 namespace Axiom.Internal.Ast
 {
-    internal class CompoundStatement : Statement
+    internal class BlockStatement : Statement
     {
-        public CompoundStatement(IList<Statement> statements)
+        public BlockStatement(IList<Statement> statements)
         {
             Statements = statements;
         }

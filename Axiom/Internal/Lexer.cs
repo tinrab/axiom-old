@@ -357,6 +357,8 @@ namespace Axiom.Internal
             { ",", Token.Comma },
             { ".", Token.Dot },
             { "?", Token.QuestionMark },
+            { "$", Token.Dollar },
+            { "#", Token.Hash },
             { "(", Token.OpenParenthesis },
             { ")", Token.CloseParenthesis },
             { "[", Token.OpenBracket },

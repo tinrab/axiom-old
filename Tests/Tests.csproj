@@ -53,12 +53,20 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="FrameTests.cs" />
+    <Compile Include="InterpreterTests.cs" />
     <Compile Include="LexerTests.cs" />
     <Compile Include="ParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SemanticsTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Data\Frames.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Functions.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Data\Initialization.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

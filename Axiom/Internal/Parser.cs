@@ -68,7 +68,7 @@ namespace Axiom.Internal
         {
             switch (Peek()) {
             case Token.OpenBrace:
-                return ParseCompoundStatement();
+                return ParseBlockStatement();
             case Token.OpenParenthesis:
                 return ParseExpressionStatement();
             case Token.KeywordIf:
@@ -122,7 +122,7 @@ namespace Axiom.Internal
             return new ForStatement(null, null, null, null);
         }
 
-        private Statement ParseCompoundStatement()
+        private Statement ParseBlockStatement()
         {
             Check(Token.OpenBrace);
 
@@ -130,7 +130,7 @@ namespace Axiom.Internal
 
             Check(Token.CloseBrace);
 
-            return new CompoundStatement(statements);
+            return new BlockStatement(statements);
         }
 
         private IList<Statement> ParseStatementList()
@@ -156,7 +156,11 @@ namespace Axiom.Internal
 
         private Statement ParseExpressionStatement()
         {
-            return new ExpressionStatement(ParseExpression());
+            var stmt = new ExpressionStatement(ParseExpression());
+
+            Accept(Token.SemiColon);
+
+            return stmt;
         }
         #endregion
 
@@ -322,21 +326,107 @@ namespace Axiom.Internal
 
         private Expression ParseUnaryExpression()
         {
-            if (Accept(Token.Subtract, Token.LogicalNot, Token.BitwiseNot)) {
-                return new UnaryExpression(_currentSymbol.Token, ParseUnaryExpression());
-            }
-
-            if (Accept(Token.Increment, Token.Decrement, Token.KeywordDelete)) {
-                return new UnaryExpression(_currentSymbol.Token, ParseMemberExpression());
-            }
-
-            var expr = ParseMemberExpression();
-
             if (Accept(Token.Increment, Token.Decrement)) {
-                return new UnaryExpression(_currentSymbol.Token, expr, true);
+                var t = _currentSymbol.Token;
+                var expr = ParseUnaryExpression();
+
+                if (!IsLeftHandSide(expr)) {
+                    Error.Report(expr.Position, "Illegal lhs value");
+                }
+
+                return new UnaryExpression(t, expr);
+            }
+
+            if (Accept(Token.Subtract, Token.BitwiseNot, Token.LogicalNot, Token.KeywordDelete)) {
+                var t = _currentSymbol.Token;
+                var expr = ParseUnaryExpression();
+
+                return new UnaryExpression(t, expr);
+            }
+
+            return ParsePostfixExpression();
+        }
+
+        private Expression ParsePostfixExpression()
+        {
+            var expr = ParseLeftHandSideExpressionAllowCall();
+
+            if ((Match(Token.Increment, Token.Decrement)) && Peek() != Token.SemiColon) {
+                if (!IsLeftHandSide(expr)) {
+                    Error.Report(expr.Position, "Illegal lhs value");
+                }
+
+                Accept(Token.Increment, Token.Decrement);
+
+                expr = new UnaryExpression(_currentSymbol.Token, expr, true);
             }
 
             return expr;
+        }
+
+        private Expression ParseLeftHandSideExpression()
+        {
+            var expr = ParsePrimaryExpression();
+
+            while (Match(Token.Dot, Token.OpenBracket)) {
+                if (Match(Token.OpenBracket)) {
+                    var member = ParseComputedMember();
+
+                    expr = new MemberExpression(MemberExpression.AccessType.ListAccess, expr, member);
+                } else {
+                    var property = ParseNonComputedMember();
+
+                    expr = new MemberExpression(MemberExpression.AccessType.Property, expr, property);
+                }
+            }
+
+            return expr;
+        }
+
+        private Expression ParseLeftHandSideExpressionAllowCall()
+        {
+            var expr = ParsePrimaryExpression();
+
+            while (Match(Token.Dot, Token.OpenBracket, Token.OpenParenthesis)) {
+                if (Match(Token.OpenParenthesis)) {
+                    var args = ParseArguments();
+
+                    expr = new CallExpression(expr, args);
+                } else if (Match(Token.OpenBracket)) {
+                    var member = ParseComputedMember();
+
+                    expr = new MemberExpression(MemberExpression.AccessType.ListAccess, expr, member);
+                } else {
+                    var property = ParseNonComputedMember();
+
+                    expr = new MemberExpression(MemberExpression.AccessType.Property, expr, property);
+                }
+            }
+
+            return expr;
+        }
+
+        private Expression ParseComputedMember()
+        {
+            Check(Token.OpenBracket);
+            var expr = ParseExpression();
+            Check(Token.CloseBracket);
+
+            return expr;
+        }
+
+        private Identifier ParseNonComputedMember()
+        {
+            Check(Token.Dot);
+
+            return ParseNonComputedProperty();
+        }
+
+        private Identifier ParseNonComputedProperty()
+        {
+            Check(Token.Identifier);
+
+            return new Identifier(_currentSymbol.Lexeme);
         }
 
         private Expression ParseMemberExpression()
@@ -362,7 +452,11 @@ namespace Axiom.Internal
 
                     Check(Token.CloseParenthesis);
 
-                    expr = new MemberExpression(MemberExpression.AccessType.Call, left, arguments);
+                    if (!(left is Identifier)) {
+                        Error.Report(left.Position, "Callable variable expected");
+                    }
+
+                    expr = new CallExpression((Identifier)left, arguments);
                 } else {
                     break;
                 }
@@ -371,7 +465,7 @@ namespace Axiom.Internal
             return expr;
         }
 
-        private Expression ParseArguments()
+        private IList<Expression> ParseArguments()
         {
             var arguments = new List<Expression>();
 
@@ -387,7 +481,7 @@ namespace Axiom.Internal
                 }
             }
 
-            return new SequenceExpression(arguments);
+            return arguments;
         }
 
         private Expression ParsePrimaryExpression()
@@ -431,9 +525,59 @@ namespace Axiom.Internal
                 return new Literal(null, Literal.LiteralType.Nil);
             }
 
+            if (Match(Token.Dollar)) {
+                return ParseFunctionExpression();
+            }
+
+            if (Match(Token.Hash)) {
+                return ParseClassExpression();
+            }
+
+            if (Match(Token.OpenBrace)) {
+                return ParseObjectInitializer();
+            }
+
             Error.Report();
 
             return null;
+        }
+
+        private Expression ParseFunctionExpression()
+        {
+            Check(Token.Dollar, Token.OpenParenthesis);
+
+            var parameters = ParseParameters();
+
+            Check(Token.CloseParenthesis);
+
+            var body = ParseStatement();
+
+            return new FunctionExpression(parameters, body);
+        }
+
+        private Expression ParseClassExpression()
+        {
+            return null;
+        }
+
+        private Expression ParseObjectInitializer()
+        {
+            return null;
+        }
+
+        private IList<Identifier> ParseParameters()
+        {
+            var parameters = new List<Identifier>();
+
+            while (Accept(Token.Identifier)) {
+                parameters.Add(new Identifier(_currentSymbol.Lexeme));
+
+                if (!Accept(Token.Comma)) {
+                    break;
+                }
+            }
+
+            return parameters;
         }
         #endregion
 
@@ -446,6 +590,17 @@ namespace Axiom.Internal
         private bool Match(Token token)
         {
             return Peek() == token;
+        }
+
+        private bool Match(params Token[] tokens)
+        {
+            foreach (var token in tokens) {
+                if (Peek() == token) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void Check(Token token)
@@ -486,6 +641,11 @@ namespace Axiom.Internal
             }
 
             return false;
+        }
+
+        private bool IsLeftHandSide(Expression expr)
+        {
+            return expr is Identifier || expr is MemberExpression;
         }
         #endregion
 

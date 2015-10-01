@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Text;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Axiom.Internal;
 using System.IO;
-using Axiom.Internal.Ast;
+using Axiom.Internal.Intermediate;
+using Axiom.Internal.Frames;
 
 namespace Tests
 {
     [TestClass]
-    public class ParserTests
+    public class InterpreterTests
     {
         private TestContext testContextInstance;
         public TestContext TestContext
@@ -16,7 +19,7 @@ namespace Tests
             set { testContextInstance = value; }
         }
 
-        [TestMethod, TestCategory("Parser")]
+        [TestMethod, TestCategory("Interpreter")]
         [DeploymentItem("Data/SimpleExpressions.xml")]
         [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML", "|DataDirectory|\\SimpleExpressions.xml", "Row", DataAccessMethod.Sequential)]
         //[Timeout(100)]
@@ -26,22 +29,26 @@ namespace Tests
             var parser = new Parser(new Lexer(new StringReader(source)));
 
             var ast = parser.Parse();
+            Console.WriteLine("AST");
             AstDebug.Debug(ast);
 
-            parser.Dispose();
-        }
+            ast.Accept(new FrameEvaluator());
 
-        [TestMethod, TestCategory("Parser")]
-        [DeploymentItem("Data/Functions.xml")]
-        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML", "|DataDirectory|\\Functions.xml", "Row", DataAccessMethod.Sequential)]
-        //[Timeout(100)]
-        public void ParseFunctions()
-        {
-            var source = TestContext.DataRow["Source"].ToString();
-            var parser = new Parser(new Lexer(new StringReader(source)));
+            var cg = new ImCodeGenerator();
+            ast.Accept(cg);
 
-            var ast = parser.Parse();
-            AstDebug.Debug(ast);
+            var sw = new StringWriter();
+
+            foreach (var chunk in cg.Chunks) {
+                chunk.Dump(sw);
+                chunk.LinearCode = chunk.Code.Linear();
+            }
+
+            Console.Write(sw.ToString());
+
+            Console.WriteLine("INTERPRETER");
+            var inter = new Interpreter(cg.Chunks);
+            inter.Run();
 
             parser.Dispose();
         }

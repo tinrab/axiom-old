@@ -8,10 +8,12 @@ namespace Axiom.Internal
         void Visit(BinaryExpression acceptor);
         void Visit(UnaryExpression acceptor);
         void Visit(SequenceExpression acceptor);
-        void Visit(CompoundStatement acceptor);
+        void Visit(BlockStatement acceptor);
         void Visit(ConditionalExpression acceptor);
         void Visit(Literal acceptor);
         void Visit(WhileStatement acceptor);
+        void Visit(CallExpression acceptor);
+        void Visit(FunctionExpression acceptor);
         void Visit(ReferenceExpression acceptor);
         void Visit(IfStatement acceptor);
         void Visit(ForStatement acceptor);

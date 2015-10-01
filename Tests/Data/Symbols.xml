@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Data>
   <Row>
-    <Source>ident 42 3.14 "hello world" true + - * / % ++ -- &amp;&amp; || ! == != &lt; > &lt;= >= &amp; | ^ ~ &lt;&lt; &gt;&gt; &gt;&gt;&gt; = += -= *= /= %= &amp;= |= ^= &lt;&lt;= &gt;&gt;= &gt;&gt;&gt;= : ; , . ? () [] {} nil if else elif for while this base is in try catch delete</Source>
+    <Source>ident 42 3.14 "hello world" true + - * / % ++ -- &amp;&amp; || ! == != &lt; > &lt;= >= &amp; | ^ ~ &lt;&lt; &gt;&gt; &gt;&gt;&gt; = += -= *= /= %= &amp;= |= ^= &lt;&lt;= &gt;&gt;= &gt;&gt;&gt;= : ; , . ? $ # () [] {} nil if else elif for while this base is in try catch delete</Source>
   </Row>
 </Data>

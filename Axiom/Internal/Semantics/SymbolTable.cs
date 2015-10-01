@@ -5,12 +5,12 @@ namespace Axiom.Internal.Semantics
 {
     internal static class SymbolTable
     {
-        private static IDictionary<string, LinkedList<AssignmentExpression>> mapping;
+        private static IDictionary<Identifier, LinkedList<AssignmentExpression>> mapping;
         private static int scope;
 
         static SymbolTable()
         {
-            mapping = new Dictionary<string, LinkedList<AssignmentExpression>>();
+            mapping = new Dictionary<Identifier, LinkedList<AssignmentExpression>>();
             scope = 0;
         }
 
@@ -21,7 +21,7 @@ namespace Axiom.Internal.Semantics
 
         public static void OldScope()
         {
-            var names = new LinkedList<string>();
+            var names = new LinkedList<Identifier>();
 
             foreach (var name in mapping.Keys) {
                 names.AddLast(name);
@@ -32,15 +32,15 @@ namespace Axiom.Internal.Semantics
             scope--;
         }
 
-        public static void Insert(string name, AssignmentExpression definition)
+        public static void Insert(Identifier name, AssignmentExpression initialization)
         {
             LinkedList<AssignmentExpression> init = null;
 
             if (!mapping.ContainsKey(name)) {
                 init = new LinkedList<AssignmentExpression>();
 
-                init.AddFirst(definition);
-                SymbolDescription.Scopes[definition] = scope;
+                init.AddFirst(initialization);
+                SymbolDescription.Scopes[initialization] = scope;
                 mapping.Add(name, init);
 
                 return;
@@ -58,11 +58,11 @@ namespace Axiom.Internal.Semantics
                 throw new IllegalInsertException();
             }
 
-            init.AddFirst(definition);
-            SymbolDescription.Scopes[definition] = scope;
+            init.AddFirst(initialization);
+            SymbolDescription.Scopes[initialization] = scope;
         }
 
-        public static void Delete(string name)
+        public static void Delete(Identifier name)
         {
             var init = mapping[name];
 
@@ -85,7 +85,7 @@ namespace Axiom.Internal.Semantics
             }
         }
 
-        public static AssignmentExpression Find(string name)
+        public static AssignmentExpression Find(Identifier name)
         {
             if (mapping.ContainsKey(name)) {
                 var init = mapping[name];

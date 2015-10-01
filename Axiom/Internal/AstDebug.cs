@@ -41,9 +41,9 @@ namespace Axiom.Internal
             _ident--;
         }
 
-        public void Visit(CompoundStatement acceptor)
+        public void Visit(BlockStatement acceptor)
         {
-            Dump("Compound");
+            Dump("Block");
 
             _ident++;
             foreach (var statement in acceptor.Statements) {
@@ -132,9 +132,9 @@ namespace Axiom.Internal
         public void Visit(Identifier acceptor)
         {
             if (SymbolDescription.Initializations.ContainsKey(acceptor)) {
-                var dec = SymbolDescription.Initializations[acceptor];
+                var init = SymbolDescription.Initializations[acceptor];
 
-                Dump("Identifier(" + acceptor.Name + ") #declared at " + dec.Position);
+                Dump("Identifier(" + acceptor.Name + ") #initialized at " + init.Position);
             } else {
                 Dump("Identifier(" + acceptor.Name + ")");
             }
@@ -223,6 +223,47 @@ namespace Axiom.Internal
             foreach (var statement in acceptor.Statements) {
                 statement.Accept(this);
             }
+        }
+
+        public void Visit(FunctionExpression acceptor)
+        {
+            var sig = "Function (";
+
+            foreach (var par in acceptor.Parameters) {
+                sig += par.Name + ", ";
+            }
+
+            sig = sig.Substring(0, sig.Length - 2) + ")";
+
+            Dump(sig);
+
+            _ident++;
+            acceptor.Body.Accept(this);
+            _ident--;
+        }
+
+        public void Visit(CallExpression acceptor)
+        {
+            Dump("Call");
+
+            _ident++;
+            {
+                Dump("Arguments");
+
+                _ident++;
+                foreach (var arg in acceptor.Arguments) {
+                    arg.Accept(this);
+                }
+                _ident--;
+            }
+            {
+                Dump("Callee");
+
+                _ident++;
+                acceptor.Callee.Accept(this);
+                _ident--;
+            }
+            _ident--;
         }
     }
 }

@@ -48,6 +48,8 @@
         Comma,
         Dot,
         QuestionMark,
+        Dollar,
+        Hash,
         OpenParenthesis,
         CloseParenthesis,
         OpenBracket,
