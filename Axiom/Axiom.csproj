@@ -53,7 +53,6 @@
     <Compile Include="Internal\Ast\IfStatement.cs" />
     <Compile Include="Internal\Ast\Literal.cs" />
     <Compile Include="Internal\Ast\MemberExpression.cs" />
-    <Compile Include="Internal\Ast\Program.cs" />
     <Compile Include="Internal\Ast\ReferenceExpression.cs" />
     <Compile Include="Internal\Ast\SequenceExpression.cs" />
     <Compile Include="Internal\Ast\Statement.cs" />
@@ -76,10 +75,12 @@
     <Compile Include="Internal\Intermediate\ImExpressionSequence.cs" />
     <Compile Include="Internal\Intermediate\ImExpressionStatement.cs" />
     <Compile Include="Internal\Intermediate\ImLabel.cs" />
+    <Compile Include="Internal\Intermediate\ImMemoryRead.cs" />
+    <Compile Include="Internal\Intermediate\ImMemoryWrite.cs" />
     <Compile Include="Internal\Intermediate\ImSequence.cs" />
     <Compile Include="Internal\Intermediate\ImStatement.cs" />
     <Compile Include="Internal\Intermediate\ImTemp.cs" />
-    <Compile Include="Internal\Intermediate\Interpreter.cs" />
+    <Compile Include="Interpreter.cs" />
     <Compile Include="Internal\IParser.cs" />
     <Compile Include="Internal\IVisitor.cs" />
     <Compile Include="Internal\Lexer.cs" />

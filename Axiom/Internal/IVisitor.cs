@@ -4,7 +4,6 @@ namespace Axiom.Internal
 {
     internal interface IVisitor
     {
-        void Visit(Program acceptor);
         void Visit(BinaryExpression acceptor);
         void Visit(UnaryExpression acceptor);
         void Visit(SequenceExpression acceptor);

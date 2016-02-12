@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 
 namespace Axiom.Internal.Intermediate
 {
@@ -32,7 +28,7 @@ namespace Axiom.Internal.Intermediate
             return linearExpr;
         }
 
-        public ImStatement Statement { get; private set; }
-        public ImExpression Expression { get; private set; }
+        public ImStatement Statement { get; set; }
+        public ImExpression Expression { get; set; }
     }
 }

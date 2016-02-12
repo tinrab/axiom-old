@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Axiom.Internal.Frames
+﻿namespace Axiom.Internal.Frames
 {
     internal class Temp
     {
         private static int count;
 
-        public Temp()
+        public Temp(string name)
         {
-            Name = "T" + (count++).ToString();
+            Name = name;
         }
 
         public override bool Equals(object obj)
@@ -19,14 +14,14 @@ namespace Axiom.Internal.Frames
             return Name == ((Temp)obj).Name;
         }
 
-        public static bool operator ==(Temp left, Temp right)
+        public static bool operator ==(Temp lhs, Temp rhs)
         {
-            return left.Equals(right);
+            return lhs.Equals(rhs);
         }
 
-        public static bool operator !=(Temp left, Temp right)
+        public static bool operator !=(Temp lhs, Temp rhs)
         {
-            return !left.Equals(right);
+            return !lhs.Equals(rhs);
         }
 
         public override int GetHashCode()
@@ -35,5 +30,15 @@ namespace Axiom.Internal.Frames
         }
 
         public string Name { get; private set; }
+
+        public static Temp Create()
+        {
+            return new Temp("T" + (count++).ToString());
+        }
+
+        public static Temp Create(string name)
+        {
+            return new Temp("_" + name);
+        }
     }
 }

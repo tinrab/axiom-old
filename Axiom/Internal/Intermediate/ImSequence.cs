@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Axiom.Internal.Intermediate
 {
@@ -26,10 +23,10 @@ namespace Axiom.Internal.Intermediate
         {
             var linear = new ImSequence();
 
-            foreach (var stmt in Statements) {
-                var linearStmt = stmt.Linear();
+            foreach (var statement in Statements) {
+                var linearStatement = statement.Linear();
 
-                linear.Statements.Add(linearStmt);
+                linear.Statements.AddAll(linearStatement.Statements);
             }
 
             return linear;

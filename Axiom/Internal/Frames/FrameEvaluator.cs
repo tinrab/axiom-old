@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Axiom.Internal.Semantics;
+﻿using Axiom.Internal.Semantics;
 using Axiom.Internal.Ast;
 
 namespace Axiom.Internal.Frames
@@ -13,6 +10,22 @@ namespace Axiom.Internal.Frames
 
         public void Visit(FunctionExpression acceptor)
         {
+            var frame = new Frame(new Label("main"), acceptor, _scope);
+
+            _scope++;
+
+            foreach (var parameter in acceptor.Parameters) {
+                FrameDescription.Accesses[parameter] = new Access(parameter.Name, frame);
+
+                parameter.Accept(this);
+            }
+
+            _frame = frame;
+
+            acceptor.Body.Accept(this);
+
+            _scope--;
+            FrameDescription.Frames[acceptor] = frame;
         }
 
         public void Visit(CallExpression acceptor)
@@ -21,6 +34,9 @@ namespace Axiom.Internal.Frames
 
         public void Visit(AssignmentExpression acceptor)
         {
+            acceptor.Destination.Accept(this);
+            acceptor.Source.Accept(this);
+
             if (acceptor.Source is FunctionExpression) {
                 var expr = (FunctionExpression)acceptor.Source;
                 Frame frame = new Frame(Label.Create(((Identifier)acceptor.Destination).Name), expr, _scope);
@@ -28,12 +44,12 @@ namespace Axiom.Internal.Frames
                 _scope++;
 
                 foreach (var par in expr.Parameters) {
-                    var access = new Access(par, frame);
+                    var access = new Access(par.Name, frame);
 
                     FrameDescription.Accesses[SymbolDescription.Initializations[par]] = access;
 
                     par.Accept(this);
-                    frame.Variables.AddLast(access);
+                    frame.Variables.Add(access);
                 }
 
                 _frame = frame;
@@ -47,6 +63,10 @@ namespace Axiom.Internal.Frames
 
         public void Visit(Identifier acceptor)
         {
+            var access = new Access(acceptor.Name, _frame);
+
+            FrameDescription.Accesses[acceptor] = access;
+            _frame.Variables.Add(access);
         }
 
         public void Visit(ReferenceExpression acceptor)
@@ -115,13 +135,6 @@ namespace Axiom.Internal.Frames
         {
             acceptor.Left.Accept(this);
             acceptor.Right.Accept(this);
-        }
-
-        public void Visit(Program acceptor)
-        {
-            foreach (var statement in acceptor.Statements) {
-                statement.Accept(this);
-            }
         }
     }
 }

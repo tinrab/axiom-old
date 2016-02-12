@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 
 namespace Axiom.Internal
 {
@@ -10,7 +6,7 @@ namespace Axiom.Internal
     {
         public static void Dump(TextWriter tw, int ident, string message)
         {
-            for (int i = 0; i < ident; i++) {
+            for (int i = 0; i < ident * 4; i++) {
                 tw.Write(" ");
             }
 

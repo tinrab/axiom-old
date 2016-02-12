@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 
 namespace Axiom.Internal.Intermediate
 {
@@ -23,6 +19,6 @@ namespace Axiom.Internal.Intermediate
             return new ImExpressionSequence(new ImSequence(), this);
         }
 
-        public object Value { get; private set; }
+        public object Value { get; set; }
     }
 }

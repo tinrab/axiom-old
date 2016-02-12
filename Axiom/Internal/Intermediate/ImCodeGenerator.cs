@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Axiom.Internal.Ast;
+using Axiom.Internal.Semantics;
 
 namespace Axiom.Internal.Intermediate
 {
@@ -14,24 +15,7 @@ namespace Axiom.Internal.Intermediate
 
         public ImCodeGenerator()
         {
-            Chunks = new LinkedList<ImChunk>();
-        }
-
-        public void Visit(Program acceptor)
-        {
-            var frame = new Frame(new Label("main"), new FunctionExpression(null, null), 0);
-
-            _frame = frame;
-
-            foreach (var statement in acceptor.Statements) {
-                statement.Accept(this);
-            }
-
-            if (_result is ImExpression) {
-                Chunks.AddLast(new ImChunk(frame, new ImExpressionStatement((ImExpression)_result)));
-            } else {
-                Chunks.AddLast(new ImChunk(frame, (ImStatement)_result));
-            }
+            Chunks = new List<ImChunk>();
         }
 
         public void Visit(ConditionalExpression acceptor)
@@ -46,7 +30,20 @@ namespace Axiom.Internal.Intermediate
 
         public void Visit(FunctionExpression acceptor)
         {
-            throw new NotImplementedException();
+            var frame = FrameDescription.Frames[acceptor];
+
+            var tmpFrame = _frame;
+            _frame = frame;
+
+            acceptor.Body.Accept(this);
+
+            if (_result is ImExpression) {
+                Chunks.Add(new ImChunk(frame, new ImExpressionStatement((ImExpression)_result)));
+            } else {
+                Chunks.Add(new ImChunk(frame, (ImStatement)_result));
+            }
+
+            _frame = tmpFrame;
         }
 
         public void Visit(IfStatement acceptor)
@@ -56,12 +53,47 @@ namespace Axiom.Internal.Intermediate
 
         public void Visit(Identifier acceptor)
         {
-            throw new NotImplementedException();
+            var init = SymbolDescription.Initializations[acceptor];
+            //var frame = FrameDescription.Frames[init];
+            //var access = FrameDescription.Accesses[init];
+
+            if (init is AssignmentExpression) {
+                var access = FrameDescription.Accesses[acceptor];
+
+                //_result = new ImMemoryRead(new ImTemp(Temp.Create(acceptor.Name)));
+                _result = new ImTemp(Temp.Create(acceptor.Name));
+            }
         }
 
         public void Visit(AssignmentExpression acceptor)
         {
-            throw new NotImplementedException();
+            acceptor.Destination.Accept(this);
+
+            var dst = (ImExpression)_result;
+
+            acceptor.Source.Accept(this);
+
+            var src = (ImExpression)_result;
+
+            var t1 = new ImTemp(Temp.Create());
+            var t2 = new ImTemp(Temp.Create());
+            var seq = new ImSequence();
+
+            /*
+            seq.Statements.Add(new ImMove(t1, dst));
+            seq.Statements.Add(new ImMove(t2, src));
+            seq.Statements.Add(new ImMove(new ImMemoryRead(t1), t2));
+            */
+
+            /*
+            seq.Statements.Add(new ImMemoryWrite(t1, dst));
+            seq.Statements.Add(new ImMemoryWrite(t2, src));
+            seq.Statements.Add(new ImMemoryWrite(new ImMemoryRead(t1), t2));
+            */
+
+            seq.Statements.Add(new ImMemoryWrite(dst, src));
+
+            _result = new ImExpressionSequence(seq, t2);
         }
 
         public void Visit(MemberExpression acceptor)
@@ -91,7 +123,19 @@ namespace Axiom.Internal.Intermediate
 
         public void Visit(BlockStatement acceptor)
         {
-            throw new NotImplementedException();
+            var seq = new ImSequence();
+
+            foreach (var statement in acceptor.Statements) {
+                statement.Accept(this);
+
+                if (_result is ImExpression) {
+                    seq.Statements.Add(new ImExpressionStatement((ImExpression)_result));
+                } else {
+                    seq.Statements.Add((ImStatement)_result);
+                }
+            }
+
+            _result = seq;
         }
 
         public void Visit(UnaryExpression acceptor)
@@ -101,7 +145,23 @@ namespace Axiom.Internal.Intermediate
 
         public void Visit(SequenceExpression acceptor)
         {
-            throw new NotImplementedException();
+            var seq = new ImSequence();
+
+            for (int i = 0; i < acceptor.Expressions.Count - 1; i++) {
+                var expr = acceptor.Expressions[i];
+
+                expr.Accept(this);
+
+                if (_result is ImExpression) {
+                    seq.Statements.Add(new ImExpressionStatement((ImExpression)_result));
+                } else {
+                    seq.Statements.Add((ImStatement)_result);
+                }
+            }
+
+            acceptor.Expressions[acceptor.Expressions.Count - 1].Accept(this);
+
+            _result = new ImExpressionSequence(seq, (ImExpression)_result);
         }
 
         public void Visit(BinaryExpression acceptor)
@@ -115,6 +175,6 @@ namespace Axiom.Internal.Intermediate
             _result = new ImBinaryOperation(ImBinaryOperation.OperatorFromToken(acceptor.Operator), left, right);
         }
 
-        public LinkedList<ImChunk> Chunks { get; private set; }
+        public IList<ImChunk> Chunks { get; private set; }
     }
 }

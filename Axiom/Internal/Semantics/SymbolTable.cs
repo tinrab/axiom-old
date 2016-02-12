@@ -21,11 +21,11 @@ namespace Axiom.Internal.Semantics
 
         public static void OldScope()
         {
-            var names = new LinkedList<Identifier>();
+            var names = new List<Identifier>();
 
-            foreach (var name in mapping.Keys) {
-                names.AddLast(name);
+            names.AddAll(mapping.Keys);
 
+            foreach (var name in names) {
                 Delete(name);
             }
 

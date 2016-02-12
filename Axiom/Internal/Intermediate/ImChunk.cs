@@ -1,9 +1,5 @@
 ﻿using Axiom.Internal.Frames;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Axiom.Internal.Intermediate
 {

@@ -1,8 +1,4 @@
 ﻿using Axiom.Internal.Frames;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace Axiom.Internal.Intermediate
@@ -16,7 +12,7 @@ namespace Axiom.Internal.Intermediate
 
         public override void Dump(TextWriter tw, int ident)
         {
-            Report.Dump(tw, ident, "TEMP(" + Temp.Name + ")");
+            Report.Dump(tw, ident, "Temp(" + Temp.Name + ")");
         }
 
         public override ImExpressionSequence Linear()
@@ -24,6 +20,6 @@ namespace Axiom.Internal.Intermediate
             return new ImExpressionSequence(new ImSequence(), this);
         }
 
-        public Temp Temp { get; private set; }
+        public Temp Temp { get; set; }
     }
 }

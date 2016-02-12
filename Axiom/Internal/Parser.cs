@@ -45,7 +45,7 @@ namespace Axiom.Internal
 
             var statements = ParseStatements();
 
-            return new Program(statements);
+            return new FunctionExpression(new List<Identifier>(), new BlockStatement(statements));
         }
 
         #region Statements

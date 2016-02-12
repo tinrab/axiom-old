@@ -14,6 +14,10 @@
 
         public static bool operator ==(Label left, Label right)
         {
+            if (ReferenceEquals(left, right)) {
+                return true;
+            }
+
             if (((object)left) == null || ((object)right) == null) {
                 return false;
             }

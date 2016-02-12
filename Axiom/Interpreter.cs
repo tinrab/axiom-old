@@ -1,20 +1,20 @@
-﻿using Axiom.Internal.Frames;
+﻿using Axiom.Internal;
+using Axiom.Internal.Frames;
+using Axiom.Internal.Intermediate;
 using System;
 using System.Collections.Generic;
 
-namespace Axiom.Internal.Intermediate
+namespace Axiom
 {
     internal class Interpreter
     {
         private IDictionary<string, ImChunk> _chunks;
-        private IDictionary<Temp, object> _temps;
-        private IDictionary<int, object> _memory;
+        private IDictionary<string, object> _memory;
 
-        public Interpreter(LinkedList<ImChunk> chunks)
+        public Interpreter(IList<ImChunk> chunks)
         {
             _chunks = new Dictionary<string, ImChunk>();
-            _temps = new Dictionary<Temp, object>();
-            _memory = new Dictionary<int, object>();
+            _memory = new Dictionary<string, object>();
 
             foreach (var chunk in chunks) {
                 _chunks[chunk.Frame.Label.Name] = chunk;
@@ -31,12 +31,10 @@ namespace Axiom.Internal.Intermediate
             var chunk = _chunks[label];
             var frame = chunk.Frame;
 
-            var outerTemps = new Dictionary<Temp, object>(_temps);
-            _temps = new Dictionary<Temp, object>();
-
             var statements = ((ImSequence)chunk.LinearCode).Statements;
+            int pc = 0;
 
-            for (int pc = 0; pc < statements.Count;) {
+            while (pc < statements.Count) {
                 var newLabel = Execute(statements[pc]);
 
                 if (newLabel == null) {
@@ -50,19 +48,30 @@ namespace Axiom.Internal.Intermediate
                 }
             }
 
-            _temps = outerTemps;
-
             return null;
         }
 
         private Label Execute(ImStatement statement)
         {
+            if (statement is ImMemoryWrite) {
+                var write = (ImMemoryWrite)statement;
+
+                if (write.Destination is ImTemp) {
+                    var dst = (ImTemp)write.Destination;
+                    var src = Execute(write.Expression);
+
+                    _memory[dst.Temp.Name] = src;
+
+                    Log("Memory write: " + dst.Temp.Name + " <- " + src.ToString());
+
+                    return null;
+                }
+            }
+
             if (statement is ImExpressionStatement) {
                 var stmt = (ImExpressionStatement)statement;
 
                 var result = Execute(stmt.Expression);
-
-                Console.WriteLine("Expression result: " + result);
 
                 return null;
             }
@@ -98,8 +107,35 @@ namespace Axiom.Internal.Intermediate
                 return expr.Value;
             }
 
+            if (expression is ImTemp) {
+                var temp = (ImTemp)expression;
+
+                /*
+                if (!_memory.ContainsKey(temp.Temp.Name)) {
+                    _memory[temp.Temp.Name] = null;
+                }
+                */
+                // return _memory[temp.Temp.Name];
+
+                return temp.Temp.Name;
+            }
+
+            if (expression is ImMemoryRead) {
+                var read = (ImMemoryRead)expression;
+
+                string addr = (string)Execute(read.Expression);
+
+                return _memory[addr];
+            }
+
             Error.Report();
+
             return null;
+        }
+
+        private void Log(string message)
+        {
+            Console.WriteLine("[Interpreter] " + message);
         }
     }
 }

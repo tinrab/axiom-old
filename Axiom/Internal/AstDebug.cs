@@ -218,13 +218,6 @@ namespace Axiom.Internal
             _ident--;
         }
 
-        public void Visit(Program acceptor)
-        {
-            foreach (var statement in acceptor.Statements) {
-                statement.Accept(this);
-            }
-        }
-
         public void Visit(FunctionExpression acceptor)
         {
             var sig = "Function (";
@@ -233,7 +226,7 @@ namespace Axiom.Internal
                 sig += par.Name + ", ";
             }
 
-            sig = sig.Substring(0, sig.Length - 2) + ")";
+            sig = (acceptor.Parameters.Count > 0 ? sig.Substring(0, sig.Length - 2) : sig) + ")";
 
             Dump(sig);
 

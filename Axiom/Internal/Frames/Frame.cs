@@ -1,5 +1,4 @@
 ﻿using Axiom.Internal.Ast;
-using Axiom.Internal.Semantics;
 using System.Collections.Generic;
 
 namespace Axiom.Internal.Frames
@@ -12,14 +11,14 @@ namespace Axiom.Internal.Frames
 
             Level = level;
             Label = label;
-            Variables = new LinkedList<Access>();
-            FP = new Temp();
-            RV = new Temp();
+            Variables = new List<Access>();
+            FramePointer = Temp.Create();
+            ReturnValue = Temp.Create();
         }
 
         public override string ToString()
         {
-            return string.Format("FRAME({0})", Label.Name, Level, Label.Name, Size);
+            return string.Format("Frame({0})", Label.Name, Level, Label.Name, Size);
         }
 
         public int Size { get; set; }
@@ -27,8 +26,8 @@ namespace Axiom.Internal.Frames
         public FunctionExpression Function { get; private set; }
         public int Level { get; private set; }
         public Label Label { get; private set; }
-        public LinkedList<Access> Variables { get; private set; }
-        public Temp FP { get; private set; }
-        public Temp RV { get; private set; }
+        public IList<Access> Variables { get; private set; }
+        public Temp FramePointer { get; private set; }
+        public Temp ReturnValue { get; private set; }
     }
 }
