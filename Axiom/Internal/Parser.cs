@@ -306,8 +306,12 @@ namespace Axiom.Internal
         {
             var expr = ParseMultiplicativeExpression();
 
-            if (Accept(Token.Add, Token.Subtract)) {
-                return new BinaryExpression(_currentSymbol.Token, expr, ParseAdditiveExpression());
+            while (true) {
+                if (Accept(Token.Add, Token.Subtract)) {
+                    expr = new BinaryExpression(_currentSymbol.Token, expr, ParseMultiplicativeExpression());
+                } else {
+                    break;
+                }
             }
 
             return expr;
@@ -317,8 +321,12 @@ namespace Axiom.Internal
         {
             var expr = ParseUnaryExpression();
 
-            if (Accept(Token.Multiply, Token.Divide, Token.Modulo)) {
-                return new BinaryExpression(_currentSymbol.Token, expr, ParseMultiplicativeExpression());
+            while (true) {
+                if (Accept(Token.Multiply, Token.Divide, Token.Modulo)) {
+                    expr = new BinaryExpression(_currentSymbol.Token, expr, ParseUnaryExpression());
+                } else {
+                    break;
+                }
             }
 
             return expr;
@@ -351,14 +359,18 @@ namespace Axiom.Internal
         {
             var expr = ParseLeftHandSideExpressionAllowCall();
 
-            if ((Match(Token.Increment, Token.Decrement)) && Peek() != Token.SemiColon) {
-                if (!IsLeftHandSide(expr)) {
-                    Error.Report(expr.Position, "Illegal lhs value");
+            while (true) {
+                if ((Match(Token.Increment, Token.Decrement)) && Peek() != Token.SemiColon) {
+                    if (!IsLeftHandSide(expr)) {
+                        Error.Report(expr.Position, "Illegal lhs value");
+                    }
+
+                    Accept(Token.Increment, Token.Decrement);
+
+                    expr = new UnaryExpression(_currentSymbol.Token, expr, true);
+                } else {
+                    break;
                 }
-
-                Accept(Token.Increment, Token.Decrement);
-
-                expr = new UnaryExpression(_currentSymbol.Token, expr, true);
             }
 
             return expr;

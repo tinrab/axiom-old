@@ -10,6 +10,7 @@ namespace Axiom
     {
         private IDictionary<string, ImChunk> _chunks;
         private IDictionary<string, object> _memory;
+        private object _completionValue;
 
         public Interpreter(IList<ImChunk> chunks)
         {
@@ -72,6 +73,8 @@ namespace Axiom
                 var stmt = (ImExpressionStatement)statement;
 
                 var result = Execute(stmt.Expression);
+
+                _completionValue = result;
 
                 return null;
             }
@@ -136,6 +139,11 @@ namespace Axiom
         private void Log(string message)
         {
             Console.WriteLine("[Interpreter] " + message);
+        }
+
+        public object GetCompletionValue()
+        {
+            return _completionValue;
         }
     }
 }

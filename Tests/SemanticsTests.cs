@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Axiom.Internal;
 using Axiom.Internal.Semantics;
 using System.IO;
+using Axiom;
 
 namespace Tests
 {
@@ -16,19 +17,14 @@ namespace Tests
             set { testContextInstance = value; }
         }
 
-        [TestMethod, TestCategory("Semantics")]
-        [DeploymentItem("Data/Initialization.xml")]
-        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.XML", "|DataDirectory|\\Initialization.xml", "Row", DataAccessMethod.Sequential)]
-        //[Timeout(100)]
-        public void TestMethod1()
+        [TestMethod, TestCategory("Semantics"), ExpectedException(typeof(Error))]
+        public void NotInitialized()
         {
-            var source = TestContext.DataRow["Source"].ToString();
+            var source = "x";
             var parser = new Parser(new Lexer(new StringReader(source)));
 
             var ast = parser.Parse();
             ast.Accept(new NameChecker());
-
-            AstDebug.Debug(ast);
 
             parser.Dispose();
         }
