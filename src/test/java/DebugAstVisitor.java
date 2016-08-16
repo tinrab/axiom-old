@@ -1,19 +1,4 @@
-import com.moybl.axiom.ast.AssignmentExpression;
-import com.moybl.axiom.ast.BinaryExpression;
-import com.moybl.axiom.ast.BlockStatement;
-import com.moybl.axiom.ast.CallExpression;
-import com.moybl.axiom.ast.ConditionalExpression;
-import com.moybl.axiom.ast.ForStatement;
-import com.moybl.axiom.ast.FunctionExpression;
-import com.moybl.axiom.ast.Identifier;
-import com.moybl.axiom.ast.IfStatement;
-import com.moybl.axiom.ast.Literal;
-import com.moybl.axiom.ast.MemberExpression;
-import com.moybl.axiom.ast.ReferenceExpression;
-import com.moybl.axiom.ast.SequenceExpression;
-import com.moybl.axiom.ast.UnaryExpression;
-import com.moybl.axiom.ast.Visitor;
-import com.moybl.axiom.ast.WhileStatement;
+import com.moybl.axiom.ast.*;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-import com.moybl.axiom.Lexer;
+import com.moybl.axiom.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,14 +9,44 @@ public class LexerTest {
 
 	@Test
 	public void testLiterals() {
-		Lexer lexer = new Lexer(new ByteArrayInputStream("42 3.14 7E11 \"hi\" false true".getBytes()));
+		Lexer lexer = new Lexer(new ByteArrayInputStream("3 3.0 3E2 3.0E2 3E-2 3.0E-2 7E2-1 \"hi\" false true".getBytes()));
 
-		Assert.assertEquals("42", lexer.next().getLexeme());
-		Assert.assertEquals("3.14", lexer.next().getLexeme());
-		Assert.assertEquals("7E11", lexer.next().getLexeme());
-		Assert.assertEquals("\"hi\"", lexer.next().getLexeme());
-		Assert.assertEquals("false", lexer.next().getLexeme());
-		Assert.assertEquals("true", lexer.next().getLexeme());
+		Symbol s = lexer.next();
+		Assert.assertEquals("3", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_INTEGER, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals("3.0", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_FLOAT, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals("3E2", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_FLOAT, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals("3.0E2", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_FLOAT, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals("3E-2", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_FLOAT, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals("3.0E-2", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_FLOAT, s.getToken());
+
+		s = lexer.next();
+		Assert.assertEquals("7E2", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_FLOAT, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals(Token.MINUS, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals(Token.LITERAL_INTEGER, s.getToken());
+
+		s = lexer.next();
+		Assert.assertEquals("\"hi\"", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_STRING, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals("false", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_BOOLEAN, s.getToken());
+		s = lexer.next();
+		Assert.assertEquals("true", s.getLexeme());
+		Assert.assertEquals(Token.LITERAL_BOOLEAN, s.getToken());
 	}
 
 }

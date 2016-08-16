@@ -1,23 +1,6 @@
 package com.moybl.axiom;
 
-import com.moybl.axiom.ast.AssignmentExpression;
-import com.moybl.axiom.ast.BinaryExpression;
-import com.moybl.axiom.ast.BlockStatement;
-import com.moybl.axiom.ast.CallExpression;
-import com.moybl.axiom.ast.ConditionalExpression;
-import com.moybl.axiom.ast.Expression;
-import com.moybl.axiom.ast.ExpressionStatement;
-import com.moybl.axiom.ast.FunctionExpression;
-import com.moybl.axiom.ast.Identifier;
-import com.moybl.axiom.ast.IfStatement;
-import com.moybl.axiom.ast.Literal;
-import com.moybl.axiom.ast.MemberExpression;
-import com.moybl.axiom.ast.Node;
-import com.moybl.axiom.ast.ReferenceExpression;
-import com.moybl.axiom.ast.SequenceExpression;
-import com.moybl.axiom.ast.Statement;
-import com.moybl.axiom.ast.UnaryExpression;
-import com.moybl.axiom.ast.WhileStatement;
+import com.moybl.axiom.ast.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -286,8 +269,12 @@ public class Parser {
 	private Expression parseAdditiveExpression() {
 		Expression expression = parseMultiplicativeExpression();
 
-		if (accept(Token.PLUS, Token.MINUS)) {
-			return new BinaryExpression(current.getToken(), expression, parseAdditiveExpression());
+		while (true) {
+			if (accept(Token.PLUS, Token.MINUS)) {
+				expression = new BinaryExpression(current.getToken(), expression, parseMultiplicativeExpression());
+			} else {
+				break;
+			}
 		}
 
 		return expression;
@@ -296,25 +283,18 @@ public class Parser {
 	private Expression parseMultiplicativeExpression() {
 		Expression expression = parseUnaryExpression();
 
-		if (accept(Token.ASTERISK, Token.SLASH, Token.PERCENT)) {
-			return new BinaryExpression(current.getToken(), expression, parseMultiplicativeExpression());
+		while (true) {
+			if (accept(Token.ASTERISK, Token.SLASH, Token.PERCENT)) {
+				expression = new BinaryExpression(current.getToken(), expression, parseUnaryExpression());
+			} else {
+				break;
+			}
 		}
 
 		return expression;
 	}
 
 	private Expression parseUnaryExpression() {
-		if (accept(Token.INCREMENT, Token.DECREMENT)) {
-			Token token = current.getToken();
-			Expression expression = parseUnaryExpression();
-
-			if (!isLeftHandSide(expression)) {
-				throw ParserException.illegalLeftHandSide(current.getPosition());
-			}
-
-			return new UnaryExpression(token, expression, UnaryExpression.Kind.PREFIX);
-		}
-
 		if (accept(Token.MINUS, Token.BITWISE_NOT, Token.LOGICAL_NOT, Token.KEYWORD_DELETE)) {
 			Token token = current.getToken();
 			Expression expression = parseUnaryExpression();
@@ -322,9 +302,10 @@ public class Parser {
 			return new UnaryExpression(token, expression, UnaryExpression.Kind.PREFIX);
 		}
 
-		return parsePostfixExpression();
+		return parseLeftHandSideExpressionAllowCall();
 	}
 
+	/*
 	private Expression parsePostfixExpression() {
 		Expression expression = parseLeftHandSideExpressionAllowCall();
 
@@ -344,6 +325,7 @@ public class Parser {
 
 		return expression;
 	}
+	*/
 
 	private Expression parseLeftHandSideExpression() {
 		Expression expression = parsePrimaryExpression();
@@ -430,7 +412,7 @@ public class Parser {
 		}
 
 		if (accept(Token.LITERAL_STRING)) {
-			return new Literal(Literal.Kind.STRING, current.getLexeme());
+			return new Literal(Literal.Kind.STRING, current.getLexeme().substring(1, current.getLexeme().length() - 2));
 		}
 
 		if (accept(Token.LITERAL_BOOLEAN)) {

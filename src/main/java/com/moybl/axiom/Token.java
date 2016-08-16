@@ -14,8 +14,6 @@ public enum Token {
 	ASTERISK,
 	SLASH,
 	PERCENT,
-	INCREMENT,
-	DECREMENT,
 	COLON,
 	SEMI_COLON,
 	COMMA,

@@ -1,5 +1,6 @@
 package com.moybl.axiom;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,8 +34,6 @@ public class Lexer {
 		put("*", Token.ASTERISK);
 		put("/", Token.SLASH);
 		put("%", Token.PERCENT);
-		put("++", Token.INCREMENT);
-		put("--", Token.DECREMENT);
 		put(":", Token.COLON);
 		put(";", Token.SEMI_COLON);
 		put(",", Token.COMMA);
@@ -139,27 +138,47 @@ public class Lexer {
 					int endColumn = column;
 
 					sb.append((char) ch);
+					boolean isScientific = false;
+					boolean hasPower = false;
 
 					while (true) {
 						stream.mark(1);
 						int next = stream.read();
 
-						if (!Character.isDigit(next)) {
-							if (next == '.' || next == 'E') {
-								if (token == Token.LITERAL_FLOAT) {
-									throw LexerException.illegalCharacter(line, column, next);
-								}
+						if (Character.isDigit(next)) {
+							ch = next;
+							sb.append((char) ch);
+							endColumn++;
 
-								token = Token.LITERAL_FLOAT;
+							if(isScientific){
+								hasPower = true;
+							}
+						} else if (next == '.') {
+							token = Token.LITERAL_FLOAT;
+
+							ch = next;
+							sb.append((char) ch);
+							endColumn++;
+						} else if(next == 'E'){
+							token = Token.LITERAL_FLOAT;
+							isScientific = true;
+
+							ch = next;
+							sb.append((char) ch);
+							endColumn++;
+						} else if(next == '-'){
+							if(isScientific && !hasPower) {
+								ch = next;
+								sb.append((char) ch);
+								endColumn++;
 							} else {
 								stream.reset();
 								break;
 							}
+						} else {
+							stream.reset();
+							break;
 						}
-
-						ch = next;
-						sb.append((char) ch);
-						endColumn++;
 					}
 
 					String lexeme = sb.toString();
@@ -254,7 +273,7 @@ public class Lexer {
 					}
 				}
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw LexerException.message(e.getMessage());
 		}
 

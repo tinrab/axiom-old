@@ -7,10 +7,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @RunWith(Parameterized.class)
 public class LexerTokensTest {
@@ -39,11 +36,9 @@ public class LexerTokensTest {
 				{"\"this is a string\"", Arrays.asList(Token.LITERAL_STRING)},
 				{"+  -/ *", Arrays.asList(Token.PLUS, Token.MINUS, Token.SLASH, Token.ASTERISK)},
 				{
-						"% ++ -- :;,.?/*this is a comment*/$#()[]{}",
+						"% :;,.?/*this is a comment*/$#()[]{}",
 						Arrays.asList(
 								Token.PERCENT,
-								Token.INCREMENT,
-								Token.DECREMENT,
 								Token.COLON,
 								Token.SEMI_COLON,
 								Token.COMMA,
@@ -76,7 +71,7 @@ public class LexerTokensTest {
 						)
 				},
 				{
-						"first_name x 42 3.14 \"hi\" true 7E11",
+						"first_name x 42 3.14 \"hi\" true 7E11 9E-3",
 						Arrays.asList(
 								Token.IDENTIFIER,
 								Token.IDENTIFIER,
@@ -84,6 +79,7 @@ public class LexerTokensTest {
 								Token.LITERAL_FLOAT,
 								Token.LITERAL_STRING,
 								Token.LITERAL_BOOLEAN,
+								Token.LITERAL_FLOAT,
 								Token.LITERAL_FLOAT
 						)
 				}

@@ -1,6 +1,6 @@
 package com.moybl.axiom.ast;
 
-public class ForStatement implements Statement{
+public class ForStatement implements Statement {
 
 	private Statement init;
 	private Expression condition;
