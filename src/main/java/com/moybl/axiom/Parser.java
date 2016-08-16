@@ -44,7 +44,7 @@ public class Parser {
 		List<Statement> statements = parseStatements();
 		Position p = Position.expand(statements.get(0).getPosition(), statements.get(statements.size() - 1).getPosition());
 
-		return new BlockStatement(p, statements);
+		return new FunctionExpression(p, new ArrayList<>(), new BlockStatement(p, statements));
 	}
 
 	private List<Statement> parseStatements() {
@@ -266,8 +266,9 @@ public class Parser {
 		Position a = expression.getPosition();
 
 		if (accept(Token.LOGICAL_EQUAL, Token.LOGICAL_NOT_EQUAL)) {
+			Token op = current.getToken();
 			Expression right = parseEqualityExpression();
-			return new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
+			return new BinaryExpression(Position.expand(a, right.getPosition()), op, expression, right);
 		}
 
 		return expression;
@@ -278,8 +279,9 @@ public class Parser {
 		Position a = expression.getPosition();
 
 		if (accept(RELATIONAL_OPERATORS)) {
+			Token op = current.getToken();
 			Expression right = parseRelationalExpression();
-			return new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
+			return new BinaryExpression(Position.expand(a, right.getPosition()), op, expression, right);
 		}
 
 		return expression;
@@ -290,8 +292,9 @@ public class Parser {
 		Position a = expression.getPosition();
 
 		if (accept(Token.BITWISE_LEFT_SHIFT, Token.ASSIGN_BITWISE_RIGHT_SHIFT, Token.ASSIGN_BITWISE_UNSIGNED_RIGHT_SHIFT)) {
+			Token op = current.getToken();
 			Expression right = parseBitwiseShiftExpression();
-			return new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
+			return new BinaryExpression(Position.expand(a, right.getPosition()), op, expression, right);
 		}
 
 		return expression;
@@ -303,8 +306,9 @@ public class Parser {
 
 		while (true) {
 			if (accept(Token.PLUS, Token.MINUS)) {
+				Token op = current.getToken();
 				Expression right = parseMultiplicativeExpression();
-				expression = new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
+				expression = new BinaryExpression(Position.expand(a, right.getPosition()), op, expression, right);
 			} else {
 				break;
 			}
@@ -319,8 +323,9 @@ public class Parser {
 
 		while (true) {
 			if (accept(Token.ASTERISK, Token.SLASH, Token.PERCENT)) {
+				Token op = current.getToken();
 				Expression right = parseUnaryExpression();
-				expression = new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
+				expression = new BinaryExpression(Position.expand(a, right.getPosition()), op, expression, right);
 			} else {
 				break;
 			}

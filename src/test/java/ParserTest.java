@@ -1,5 +1,4 @@
-import com.moybl.axiom.Lexer;
-import com.moybl.axiom.Parser;
+import com.moybl.axiom.*;
 import com.moybl.axiom.vm.StackBasedInterpreter;
 
 import org.junit.Assert;

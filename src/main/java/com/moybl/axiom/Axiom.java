@@ -2,6 +2,7 @@ package com.moybl.axiom;
 
 import com.moybl.axiom.ast.Node;
 import com.moybl.axiom.semantics.NameChecker;
+import com.moybl.axiom.semantics.SymbolMap;
 
 import java.io.ByteArrayInputStream;
 
@@ -11,11 +12,9 @@ public class Axiom {
 		Lexer lexer = new Lexer(new ByteArrayInputStream(source.getBytes()));
 		Parser parser = new Parser(lexer);
 		Node root = parser.parse();
-		NameChecker nameChecker = new NameChecker();
+		SymbolMap symbolMap = NameChecker.check(root);
 
-		root.accept(nameChecker);
-
-		return new Program(root, nameChecker.getSymbolMap());
+		return new Program(root, symbolMap);
 	}
 
 }

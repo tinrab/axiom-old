@@ -11,6 +11,10 @@ public class DebugAstVisitor implements Visitor {
 
 	public DebugAstVisitor(SymbolMap symbolMap) {
 		this.symbolMap = symbolMap;
+
+		if(symbolMap == null){
+			this.symbolMap = new SymbolMap();
+		}
 	}
 
 	public void visit(BinaryExpression acceptor) {
