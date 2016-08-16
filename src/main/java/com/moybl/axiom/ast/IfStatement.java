@@ -1,18 +1,22 @@
 package com.moybl.axiom.ast;
 
-public class IfStatement implements Statement {
+import com.moybl.axiom.Position;
+
+public class IfStatement extends Statement {
 
 	private Expression condition;
 	private Statement body;
 	private Statement elseBody;
 
-	public IfStatement(Expression condition, Statement body, Statement elseBody) {
+	public IfStatement(Position position, Expression condition, Statement body, Statement elseBody) {
+		super(position);
 		this.condition = condition;
 		this.body = body;
 		this.elseBody = elseBody;
 	}
 
-	public IfStatement(Expression condition, Statement body) {
+	public IfStatement(Position position, Expression condition, Statement body) {
+		super(position);
 		this.condition = condition;
 		this.body = body;
 	}

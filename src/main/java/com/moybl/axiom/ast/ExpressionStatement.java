@@ -1,10 +1,13 @@
 package com.moybl.axiom.ast;
 
-public class ExpressionStatement implements Statement {
+import com.moybl.axiom.Position;
+
+public class ExpressionStatement extends Statement {
 
 	private Expression expression;
 
-	public ExpressionStatement(Expression expression) {
+	public ExpressionStatement(Position position, Expression expression) {
+		super(position);
 		this.expression = expression;
 	}
 

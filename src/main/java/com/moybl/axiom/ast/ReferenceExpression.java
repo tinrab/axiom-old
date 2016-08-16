@@ -1,6 +1,8 @@
 package com.moybl.axiom.ast;
 
-public class ReferenceExpression implements Expression {
+import com.moybl.axiom.Position;
+
+public class ReferenceExpression extends Expression {
 
 	public enum Kind {
 		THIS, BASE
@@ -8,7 +10,8 @@ public class ReferenceExpression implements Expression {
 
 	private Kind kind;
 
-	public ReferenceExpression(Kind kind) {
+	public ReferenceExpression(Position position, Kind kind) {
+		super(position);
 		this.kind = kind;
 	}
 

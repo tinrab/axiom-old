@@ -1,12 +1,15 @@
 package com.moybl.axiom.ast;
 
+import com.moybl.axiom.Position;
+
 import java.util.List;
 
-public class BlockStatement implements Statement {
+public class BlockStatement extends Statement {
 
 	private List<Statement> statements;
 
-	public BlockStatement(List<Statement> statements) {
+	public BlockStatement(Position position, List<Statement> statements) {
+		super(position);
 		this.statements = statements;
 	}
 

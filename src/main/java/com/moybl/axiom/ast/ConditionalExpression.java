@@ -1,12 +1,15 @@
 package com.moybl.axiom.ast;
 
-public class ConditionalExpression implements Expression {
+import com.moybl.axiom.Position;
+
+public class ConditionalExpression extends Expression {
 
 	private Expression test;
 	private Expression consequent;
 	private Expression alternate;
 
-	public ConditionalExpression(Expression test, Expression consequent, Expression alternate) {
+	public ConditionalExpression(Position position, Expression test, Expression consequent, Expression alternate) {
+		super(position);
 		this.test = test;
 		this.consequent = consequent;
 		this.alternate = alternate;

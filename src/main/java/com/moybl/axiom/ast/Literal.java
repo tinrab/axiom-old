@@ -1,6 +1,8 @@
 package com.moybl.axiom.ast;
 
-public class Literal implements Expression {
+import com.moybl.axiom.Position;
+
+public class Literal extends Expression {
 
 	public enum Kind {
 		INTEGER,
@@ -13,7 +15,8 @@ public class Literal implements Expression {
 	private Kind kind;
 	private Object value;
 
-	public Literal(Kind kind, Object value) {
+	public Literal(Position position, Kind kind, Object value) {
+		super(position);
 		this.kind = kind;
 		this.value = value;
 	}

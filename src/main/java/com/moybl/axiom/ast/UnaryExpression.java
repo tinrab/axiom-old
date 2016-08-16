@@ -1,8 +1,9 @@
 package com.moybl.axiom.ast;
 
+import com.moybl.axiom.Position;
 import com.moybl.axiom.Token;
 
-public class UnaryExpression implements Expression {
+public class UnaryExpression extends Expression {
 
 	public enum Kind {
 		POSTFIX, PREFIX
@@ -12,7 +13,8 @@ public class UnaryExpression implements Expression {
 	private Expression expression;
 	private Kind kind;
 
-	public UnaryExpression(Token operator, Expression expression, Kind kind) {
+	public UnaryExpression(Position position, Token operator, Expression expression, Kind kind) {
+		super(position);
 		this.operator = operator;
 		this.expression = expression;
 		this.kind = kind;

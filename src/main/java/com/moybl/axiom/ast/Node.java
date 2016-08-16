@@ -1,7 +1,19 @@
 package com.moybl.axiom.ast;
 
-public interface Node {
+import com.moybl.axiom.Position;
 
-	public void accept(Visitor visitor);
+public abstract class Node {
+
+	private Position position;
+
+	public Node(Position position) {
+		this.position = position;
+	}
+
+	public abstract void accept(Visitor visitor);
+
+	public Position getPosition() {
+		return position;
+	}
 
 }

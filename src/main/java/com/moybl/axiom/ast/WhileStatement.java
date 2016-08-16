@@ -1,11 +1,14 @@
 package com.moybl.axiom.ast;
 
-public class WhileStatement implements Statement {
+import com.moybl.axiom.Position;
+
+public class WhileStatement extends Statement {
 
 	private Expression condition;
 	private Statement body;
 
-	public WhileStatement(Expression condition, Statement body) {
+	public WhileStatement(Position position, Expression condition, Statement body) {
+		super(position);
 		this.condition = condition;
 		this.body = body;
 	}

@@ -1,4 +1,5 @@
 import com.moybl.axiom.ast.*;
+import com.moybl.axiom.semantics.SymbolMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +7,10 @@ import java.util.List;
 public class DebugAstVisitor implements Visitor {
 
 	private int ident;
+	private SymbolMap symbolMap;
 
-	public DebugAstVisitor() {
+	public DebugAstVisitor(SymbolMap symbolMap) {
+		this.symbolMap = symbolMap;
 	}
 
 	public void visit(BinaryExpression acceptor) {
@@ -168,7 +171,13 @@ public class DebugAstVisitor implements Visitor {
 	}
 
 	public void visit(Identifier acceptor) {
-		print("Identifier(%s)", acceptor.getName());
+		if (symbolMap.isInitialized(acceptor)) {
+			AssignmentExpression init = symbolMap.getInitialization(acceptor);
+
+			print("Identifier(%s) #initialized at %s", acceptor.getName(), init.getPosition());
+		} else {
+			print("Identifier(%s)", acceptor.getName());
+		}
 	}
 
 	public void visit(MemberExpression acceptor) {

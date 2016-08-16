@@ -1,10 +1,13 @@
 package com.moybl.axiom.ast;
 
-public class Identifier implements Expression {
+import com.moybl.axiom.Position;
+
+public class Identifier extends Expression {
 
 	private String name;
 
-	public Identifier(String name) {
+	public Identifier(Position position, String name) {
+		super(position);
 		this.name = name;
 	}
 

@@ -1,5 +1,11 @@
 package com.moybl.axiom.ast;
 
-public interface Statement extends Node {
+import com.moybl.axiom.Position;
+
+public abstract class Statement extends Node {
+
+	public Statement(Position position) {
+		super(position);
+	}
 
 }

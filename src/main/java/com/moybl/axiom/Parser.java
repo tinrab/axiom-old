@@ -41,9 +41,10 @@ public class Parser {
 	public Node parse() {
 		next = lexer.next();
 
-		return new FunctionExpression(
-				new ArrayList<Identifier>(),
-				new BlockStatement(parseStatements()));
+		List<Statement> statements = parseStatements();
+		Position p = Position.expand(statements.get(0).getPosition(), statements.get(statements.size() - 1).getPosition());
+
+		return new BlockStatement(p, statements);
 	}
 
 	private List<Statement> parseStatements() {
@@ -82,10 +83,12 @@ public class Parser {
 
 	private Statement parseWhileStatement() {
 		check(Token.KEYWORD_WHILE);
+		Position a = current.getPosition();
 		Expression condition = parseExpression();
 		Statement body = parseStatement();
+		Position b = current.getPosition();
 
-		return new WhileStatement(condition, body);
+		return new WhileStatement(Position.expand(a, b), condition, body);
 	}
 
 	private Statement parseForStatement() {
@@ -94,24 +97,30 @@ public class Parser {
 
 	private Statement parseIfStatement() {
 		check(Token.KEYWORD_IF);
+		Position a = current.getPosition();
 		Expression condition = parseExpression();
 		Statement body = parseStatement();
 
 		if (accept(Token.KEYWORD_ELSE)) {
 			Statement elseBody = parseStatement();
+			Position b = current.getPosition();
 
-			return new IfStatement(condition, body, elseBody);
+			return new IfStatement(Position.expand(a, b), condition, body, elseBody);
 		}
 
-		return new IfStatement(condition, body);
+		Position b = current.getPosition();
+
+		return new IfStatement(Position.expand(a, b), condition, body);
 	}
 
 	private Statement parseBlockStatement() {
 		check(Token.OPEN_BRACE);
+		Position a = current.getPosition();
 		List<Statement> statements = parseStatementList();
 		check(Token.CLOSE_BRACE);
+		Position b = current.getPosition();
 
-		return new BlockStatement(statements);
+		return new BlockStatement(Position.expand(a, b), statements);
 	}
 
 	private List<Statement> parseStatementList() {
@@ -135,7 +144,8 @@ public class Parser {
 	}
 
 	private Statement parseExpressionStatement() {
-		Statement statement = new ExpressionStatement(parseExpression());
+		Expression expression = parseExpression();
+		Statement statement = new ExpressionStatement(expression.getPosition(), expression);
 		accept(Token.SEMI_COLON);
 
 		return statement;
@@ -144,6 +154,7 @@ public class Parser {
 	// Expressions
 	private Expression parseExpression() {
 		Expression expression = parseAssignmentExpression();
+		Position a = expression.getPosition();
 
 		if (match(Token.COMMA)) {
 			List<Expression> expressions = new ArrayList<Expression>();
@@ -153,7 +164,9 @@ public class Parser {
 				expressions.add(parseExpression());
 			}
 
-			return new SequenceExpression(expressions);
+			Position b = current.getPosition();
+
+			return new SequenceExpression(Position.expand(a, b), expressions);
 		}
 
 		return expression;
@@ -161,12 +174,13 @@ public class Parser {
 
 	private Expression parseAssignmentExpression() {
 		Expression expression = parseConditionalExpression();
+		Position a = expression.getPosition();
 
 		if (accept(ASSIGNMENT_OPERATORS)) {
 			Token operator = current.getToken();
-			Expression destination = parseAssignmentExpression();
+			Expression source = parseAssignmentExpression();
 
-			return new AssignmentExpression(operator, expression, destination);
+			return new AssignmentExpression(Position.expand(a, expression.getPosition()), operator, source, expression);
 		}
 
 		return expression;
@@ -174,13 +188,14 @@ public class Parser {
 
 	private Expression parseConditionalExpression() {
 		Expression expression = parseOrExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.QUESTION_MARK)) {
 			Expression consequent = parseAssignmentExpression();
 			check(Token.COLON);
 			Expression alternate = parseAssignmentExpression();
 
-			return new ConditionalExpression(expression, consequent, alternate);
+			return new ConditionalExpression(Position.expand(a, alternate.getPosition()), expression, consequent, alternate);
 		}
 
 		return expression;
@@ -188,9 +203,11 @@ public class Parser {
 
 	private Expression parseOrExpression() {
 		Expression expression = parseAndExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.LOGICAL_OR)) {
-			return new BinaryExpression(Token.LOGICAL_OR, expression, parseOrExpression());
+			Expression right = parseOrExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), Token.LOGICAL_OR, expression, right);
 		}
 
 		return expression;
@@ -198,9 +215,11 @@ public class Parser {
 
 	private Expression parseAndExpression() {
 		Expression expression = parseBitwiseOrExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.LOGICAL_AND)) {
-			return new BinaryExpression(Token.LOGICAL_AND, expression, parseAndExpression());
+			Expression right = parseAndExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), Token.LOGICAL_AND, expression, right);
 		}
 
 		return expression;
@@ -208,9 +227,11 @@ public class Parser {
 
 	private Expression parseBitwiseOrExpression() {
 		Expression expression = parseBitwiseXorExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.BITWISE_OR)) {
-			return new BinaryExpression(Token.BITWISE_OR, expression, parseBitwiseOrExpression());
+			Expression right = parseBitwiseOrExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), Token.BITWISE_OR, expression, right);
 		}
 
 		return expression;
@@ -218,9 +239,11 @@ public class Parser {
 
 	private Expression parseBitwiseXorExpression() {
 		Expression expression = parseBitwiseAndExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.BITWISE_XOR)) {
-			return new BinaryExpression(Token.BITWISE_XOR, expression, parseBitwiseXorExpression());
+			Expression right = parseBitwiseXorExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), Token.BITWISE_XOR, expression, right);
 		}
 
 		return expression;
@@ -228,9 +251,11 @@ public class Parser {
 
 	private Expression parseBitwiseAndExpression() {
 		Expression expression = parseEqualityExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.BITWISE_AND)) {
-			return new BinaryExpression(Token.BITWISE_AND, expression, parseBitwiseAndExpression());
+			Expression right = parseBitwiseAndExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), Token.BITWISE_AND, expression, right);
 		}
 
 		return expression;
@@ -238,9 +263,11 @@ public class Parser {
 
 	private Expression parseEqualityExpression() {
 		Expression expression = parseRelationalExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.LOGICAL_EQUAL, Token.LOGICAL_NOT_EQUAL)) {
-			return new BinaryExpression(current.getToken(), expression, parseEqualityExpression());
+			Expression right = parseEqualityExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
 		}
 
 		return expression;
@@ -248,9 +275,11 @@ public class Parser {
 
 	private Expression parseRelationalExpression() {
 		Expression expression = parseBitwiseShiftExpression();
+		Position a = expression.getPosition();
 
 		if (accept(RELATIONAL_OPERATORS)) {
-			return new BinaryExpression(current.getToken(), expression, parseRelationalExpression());
+			Expression right = parseRelationalExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
 		}
 
 		return expression;
@@ -258,9 +287,11 @@ public class Parser {
 
 	private Expression parseBitwiseShiftExpression() {
 		Expression expression = parseAdditiveExpression();
+		Position a = expression.getPosition();
 
 		if (accept(Token.BITWISE_LEFT_SHIFT, Token.ASSIGN_BITWISE_RIGHT_SHIFT, Token.ASSIGN_BITWISE_UNSIGNED_RIGHT_SHIFT)) {
-			return new BinaryExpression(current.getToken(), expression, parseBitwiseShiftExpression());
+			Expression right = parseBitwiseShiftExpression();
+			return new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
 		}
 
 		return expression;
@@ -268,10 +299,12 @@ public class Parser {
 
 	private Expression parseAdditiveExpression() {
 		Expression expression = parseMultiplicativeExpression();
+		Position a = expression.getPosition();
 
 		while (true) {
 			if (accept(Token.PLUS, Token.MINUS)) {
-				expression = new BinaryExpression(current.getToken(), expression, parseMultiplicativeExpression());
+				Expression right = parseMultiplicativeExpression();
+				expression = new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
 			} else {
 				break;
 			}
@@ -282,10 +315,12 @@ public class Parser {
 
 	private Expression parseMultiplicativeExpression() {
 		Expression expression = parseUnaryExpression();
+		Position a = expression.getPosition();
 
 		while (true) {
 			if (accept(Token.ASTERISK, Token.SLASH, Token.PERCENT)) {
-				expression = new BinaryExpression(current.getToken(), expression, parseUnaryExpression());
+				Expression right = parseUnaryExpression();
+				expression = new BinaryExpression(Position.expand(a, right.getPosition()), current.getToken(), expression, right);
 			} else {
 				break;
 			}
@@ -296,10 +331,11 @@ public class Parser {
 
 	private Expression parseUnaryExpression() {
 		if (accept(Token.MINUS, Token.BITWISE_NOT, Token.LOGICAL_NOT, Token.KEYWORD_DELETE)) {
+			Position a = current.getPosition();
 			Token token = current.getToken();
 			Expression expression = parseUnaryExpression();
 
-			return new UnaryExpression(token, expression, UnaryExpression.Kind.PREFIX);
+			return new UnaryExpression(Position.expand(a, expression.getPosition()), token, expression, UnaryExpression.Kind.PREFIX);
 		}
 
 		return parseLeftHandSideExpressionAllowCall();
@@ -329,14 +365,15 @@ public class Parser {
 
 	private Expression parseLeftHandSideExpression() {
 		Expression expression = parsePrimaryExpression();
+		Position a = expression.getPosition();
 
 		while (match(Token.DOT, Token.OPEN_BRACKET)) {
 			if (match(Token.OPEN_BRACKET)) {
 				Expression member = parseComputedMemberExpression();
-				expression = new MemberExpression(MemberExpression.Kind.LIST, expression, member);
+				expression = new MemberExpression(Position.expand(a, member.getPosition()), MemberExpression.Kind.LIST, expression, member);
 			} else {
 				Expression property = parseNonComputedMemberExpression();
-				expression = new MemberExpression(MemberExpression.Kind.PROPERTY, expression, property);
+				expression = new MemberExpression(Position.expand(a, property.getPosition()), MemberExpression.Kind.PROPERTY, expression, property);
 			}
 		}
 
@@ -345,18 +382,24 @@ public class Parser {
 
 	private Expression parseLeftHandSideExpressionAllowCall() {
 		Expression expression = parsePrimaryExpression();
+		Position a = expression.getPosition();
 
 		while (match(Token.DOT, Token.OPEN_BRACKET, Token.OPEN_PARENTHESIS)) {
 			if (match(Token.OPEN_PARENTHESIS)) {
 				List<Expression> arguments = parseArguments();
+				Position b = current.getPosition();
 
-				expression = new CallExpression(expression, arguments);
+				if (arguments.size() != 0) {
+					b = arguments.get(arguments.size() - 1).getPosition();
+				}
+
+				expression = new CallExpression(Position.expand(a, b), expression, arguments);
 			} else if (match(Token.OPEN_BRACKET)) {
 				Expression member = parseComputedMemberExpression();
-				expression = new MemberExpression(MemberExpression.Kind.LIST, expression, member);
+				expression = new MemberExpression(Position.expand(a, member.getPosition()), MemberExpression.Kind.LIST, expression, member);
 			} else {
 				Expression property = parseNonComputedMemberExpression();
-				expression = new MemberExpression(MemberExpression.Kind.PROPERTY, expression, property);
+				expression = new MemberExpression(Position.expand(a, property.getPosition()), MemberExpression.Kind.PROPERTY, expression, property);
 			}
 		}
 
@@ -380,7 +423,7 @@ public class Parser {
 	private Expression parseNonComputedPropertyExpression() {
 		check(Token.IDENTIFIER);
 
-		return new Identifier(current.getLexeme());
+		return new Identifier(current.getPosition(), current.getLexeme());
 	}
 
 	private Expression parsePrimaryExpression() {
@@ -392,35 +435,35 @@ public class Parser {
 		}
 
 		if (accept(Token.IDENTIFIER)) {
-			return new Identifier(current.getLexeme());
+			return new Identifier(current.getPosition(), current.getLexeme());
 		}
 
 		if (accept(Token.KEYWORD_THIS)) {
-			return new ReferenceExpression(ReferenceExpression.Kind.THIS);
+			return new ReferenceExpression(current.getPosition(), ReferenceExpression.Kind.THIS);
 		}
 
 		if (accept(Token.KEYWORD_BASE)) {
-			return new ReferenceExpression(ReferenceExpression.Kind.BASE);
+			return new ReferenceExpression(current.getPosition(), ReferenceExpression.Kind.BASE);
 		}
 
 		if (accept(Token.LITERAL_INTEGER)) {
-			return new Literal(Literal.Kind.INTEGER, Long.parseLong(current.getLexeme()));
+			return new Literal(current.getPosition(), Literal.Kind.INTEGER, Long.parseLong(current.getLexeme()));
 		}
 
 		if (accept(Token.LITERAL_FLOAT)) {
-			return new Literal(Literal.Kind.FLOAT, Double.parseDouble(current.getLexeme()));
+			return new Literal(current.getPosition(), Literal.Kind.FLOAT, Double.parseDouble(current.getLexeme()));
 		}
 
 		if (accept(Token.LITERAL_STRING)) {
-			return new Literal(Literal.Kind.STRING, current.getLexeme().substring(1, current.getLexeme().length() - 2));
+			return new Literal(current.getPosition(), Literal.Kind.STRING, current.getLexeme().substring(1, current.getLexeme().length() - 2));
 		}
 
 		if (accept(Token.LITERAL_BOOLEAN)) {
-			return new Literal(Literal.Kind.BOOLEAN, current.getLexeme().equals("true"));
+			return new Literal(current.getPosition(), Literal.Kind.BOOLEAN, current.getLexeme().equals("true"));
 		}
 
 		if (accept(Token.KEYWORD_NIL)) {
-			return new Literal(Literal.Kind.NIL, null);
+			return new Literal(current.getPosition(), Literal.Kind.NIL, null);
 		}
 
 		if (match(Token.DOLLAR)) {
@@ -439,12 +482,21 @@ public class Parser {
 	}
 
 	private Expression parseFunctionExpression() {
-		check(Token.DOLLAR, Token.OPEN_PARENTHESIS);
+		check(Token.DOLLAR);
+		Position a = current.getPosition();
+		check(Token.OPEN_PARENTHESIS);
 		List<Identifier> parameters = parseParameters();
 		check(Token.CLOSE_PARENTHESIS);
 		Statement body = parseStatement();
+		Position p = null;
 
-		return new FunctionExpression(parameters, body);
+		if (body == null) {
+			p = current.getPosition();
+		} else {
+			p = Position.expand(a, body.getPosition());
+		}
+
+		return new FunctionExpression(p, parameters, body);
 	}
 
 	private Expression parseClassExpression() {
@@ -477,7 +529,7 @@ public class Parser {
 		List<Identifier> parameters = new ArrayList<Identifier>();
 
 		while (accept(Token.IDENTIFIER)) {
-			parameters.add(new Identifier(current.getLexeme()));
+			parameters.add(new Identifier(current.getPosition(), current.getLexeme()));
 
 			if (!accept(Token.COMMA)) {
 				break;

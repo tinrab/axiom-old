@@ -46,4 +46,8 @@ public class Position {
 		return String.format("[%d:%d-%d:%d]", startLine, startColumn, endLine, endColumn);
 	}
 
+	public static Position expand(Position a, Position b) {
+		return new Position(a.startLine, b.endLine, a.startColumn, b.endColumn);
+	}
+
 }

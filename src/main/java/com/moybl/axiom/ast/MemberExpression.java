@@ -1,6 +1,8 @@
 package com.moybl.axiom.ast;
 
-public class MemberExpression implements Expression {
+import com.moybl.axiom.Position;
+
+public class MemberExpression extends Expression {
 
 	public enum Kind {
 		LIST, PROPERTY
@@ -10,7 +12,8 @@ public class MemberExpression implements Expression {
 	private Expression object;
 	private Expression member;
 
-	public MemberExpression(Kind kind, Expression object, Expression member) {
+	public MemberExpression(Position position, Kind kind, Expression object, Expression member) {
+		super(position);
 		this.kind = kind;
 		this.object = object;
 		this.member = member;

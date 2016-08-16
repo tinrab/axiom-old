@@ -1,13 +1,16 @@
 package com.moybl.axiom.ast;
 
-public class ForStatement implements Statement {
+import com.moybl.axiom.Position;
+
+public class ForStatement extends Statement {
 
 	private Statement init;
 	private Expression condition;
 	private Statement loop;
 	private Statement body;
 
-	public ForStatement(Statement init, Expression condition, Statement loop, Statement body) {
+	public ForStatement(Position position, Statement init, Expression condition, Statement loop, Statement body) {
+		super(position);
 		this.init = init;
 		this.condition = condition;
 		this.loop = loop;

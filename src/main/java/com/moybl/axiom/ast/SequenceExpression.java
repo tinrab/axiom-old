@@ -1,12 +1,15 @@
 package com.moybl.axiom.ast;
 
+import com.moybl.axiom.Position;
+
 import java.util.List;
 
-public class SequenceExpression implements Expression {
+public class SequenceExpression extends Expression {
 
 	private List<Expression> expressions;
 
-	public SequenceExpression(List<Expression> expressions) {
+	public SequenceExpression(Position position, List<Expression> expressions) {
+		super(position);
 		this.expressions = expressions;
 	}
 
