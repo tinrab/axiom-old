@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<Data>
-  <Row>
-    <Source>
-      f = $(x) x + 1;
-      f(41)
-    </Source>
-  </Row>
-</Data>
